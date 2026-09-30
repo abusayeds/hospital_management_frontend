@@ -2,6 +2,7 @@ import {
   Activity,
   BadgeDollarSign,
   BarChart3,
+  BookOpen,
   Bot,
   Building2,
   CalendarCheck,
@@ -167,6 +168,7 @@ export const NAVIGATION: Record<Role, NavSection[]> = {
         { label: "Roles & Permissions", labelBn: "রোল ও পারমিশন", href: "/admin/roles", icon: ShieldCheck, permission: "user:manage", description: "Least-privilege access for every role." },
         { label: "Audit Logs", labelBn: "অডিট লগ", href: "/admin/audit-logs", icon: ScrollText, permission: "audit:read", description: "Who did what and when, for every sensitive action." },
         { label: "Event Log", labelBn: "ইভেন্ট লগ", href: "/admin/events", icon: Workflow, permission: "audit:read", description: "Business events and which automations processed them." },
+        { label: "Knowledge Base", labelBn: "নলেজ বেস", href: "/admin/knowledge", icon: BookOpen, permission: "knowledge:manage", description: "What the patient assistant may say about the hospital." },
       ],
     },
     {
