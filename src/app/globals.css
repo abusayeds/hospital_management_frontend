@@ -1,0 +1,279 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Testolife design tokens
+ * -----------------------
+ * Every component reads colors from these CSS variables, never from raw hex
+ * values, so the whole UI can be re-themed (or get a dark mode) in one place.
+ *
+ *  - Brand:  teal #0F766E for primary buttons and active navigation
+ *  - Text:   slate #334155 body, #0F172A headings, #64748B secondary
+ *  - Page:   #F8FAFC background, white cards, subtle border + very soft shadow
+ *  - Status: waiting=amber, active(in consultation)=blue, success=green,
+ *            neutral(cancelled/no-show)=gray, danger(emergency/unpaid)=red,
+ *            info(booked/scheduled)=teal. Always shown with a text label.
+ */
+:root {
+  color-scheme: light;
+
+  --background: #f8fafc;
+  --foreground: #334155;
+  --heading: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #334155;
+  --popover: #ffffff;
+  --popover-foreground: #334155;
+  --primary: #0f766e;
+  --primary-hover: #115e59;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f0fdfa;
+  --accent-foreground: #115e59;
+  --destructive: #dc2626;
+  --border: #e2e8f0;
+  --input: #cbd5e1;
+  --ring: #0f766e;
+  --radius: 0.625rem;
+
+  /* Categorical chart order (validated for color-blind separation) */
+  --chart-1: #0d9488;
+  --chart-2: #2563eb;
+  --chart-3: #d97706;
+  --chart-4: #9333ea;
+  --chart-5: #db2777;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #475569;
+  --sidebar-primary: #0f766e;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0fdfa;
+  --sidebar-accent-foreground: #0f766e;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #0f766e;
+
+  /* Semantic status colors: background / text / border / dot */
+  --status-waiting-bg: #fffbeb;
+  --status-waiting-fg: #b45309;
+  --status-waiting-border: #fde68a;
+  --status-waiting-dot: #f59e0b;
+
+  --status-active-bg: #eff6ff;
+  --status-active-fg: #1d4ed8;
+  --status-active-border: #bfdbfe;
+  --status-active-dot: #3b82f6;
+
+  --status-success-bg: #f0fdf4;
+  --status-success-fg: #15803d;
+  --status-success-border: #bbf7d0;
+  --status-success-dot: #22c55e;
+
+  --status-neutral-bg: #f1f5f9;
+  --status-neutral-fg: #475569;
+  --status-neutral-border: #e2e8f0;
+  --status-neutral-dot: #94a3b8;
+
+  --status-danger-bg: #fef2f2;
+  --status-danger-fg: #b91c1c;
+  --status-danger-border: #fecaca;
+  --status-danger-dot: #ef4444;
+
+  --status-info-bg: #f0fdfa;
+  --status-info-fg: #0f766e;
+  --status-info-border: #99f6e4;
+  --status-info-dot: #14b8a6;
+}
+
+@theme inline {
+  /* Inter renders Latin text and numbers; Bangla glyphs are not in Inter, so
+     the browser falls through to Hind Siliguri for them automatically. */
+  --font-sans: var(--font-inter), var(--font-hind), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-inter), var(--font-hind), ui-sans-serif, system-ui, sans-serif;
+  --font-bangla: var(--font-hind), var(--font-inter), sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-heading: var(--heading);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-status-waiting-bg: var(--status-waiting-bg);
+  --color-status-waiting-fg: var(--status-waiting-fg);
+  --color-status-waiting-border: var(--status-waiting-border);
+  --color-status-waiting-dot: var(--status-waiting-dot);
+  --color-status-active-bg: var(--status-active-bg);
+  --color-status-active-fg: var(--status-active-fg);
+  --color-status-active-border: var(--status-active-border);
+  --color-status-active-dot: var(--status-active-dot);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-fg: var(--status-success-fg);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-success-dot: var(--status-success-dot);
+  --color-status-neutral-bg: var(--status-neutral-bg);
+  --color-status-neutral-fg: var(--status-neutral-fg);
+  --color-status-neutral-border: var(--status-neutral-border);
+  --color-status-neutral-dot: var(--status-neutral-dot);
+  --color-status-danger-bg: var(--status-danger-bg);
+  --color-status-danger-fg: var(--status-danger-fg);
+  --color-status-danger-border: var(--status-danger-border);
+  --color-status-danger-dot: var(--status-danger-dot);
+  --color-status-info-bg: var(--status-info-bg);
+  --color-status-info-fg: var(--status-info-fg);
+  --color-status-info-border: var(--status-info-border);
+  --color-status-info-dot: var(--status-info-dot);
+
+  /* Legacy names used by the existing chat page, mapped onto the new palette */
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-500: #14b8a6;
+  --color-brand-600: var(--primary);
+  --color-brand-700: var(--primary-hover);
+  --color-brand-900: #134e4a;
+  --color-surface: var(--card);
+  --color-canvas: var(--background);
+  --color-line: var(--border);
+  --color-ink: var(--heading);
+  --color-ink-2: var(--foreground);
+  --color-ink-3: var(--muted-foreground);
+  --color-good: var(--status-success-fg);
+  --color-warn: var(--status-waiting-fg);
+  --color-critical: var(--status-danger-fg);
+  --color-chat-bg: #efeae2;
+  --color-chat-out: #d9fdd3;
+
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.04);
+  --shadow-raised: 0 4px 12px rgb(15 23 42 / 0.06), 0 1px 3px rgb(15 23 42 / 0.05);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Dark mode: add a `.dark { --background: ...; }` block here later.
+   Components need no changes because they only use the tokens above. */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Bangla conjuncts and vowel signs need a little more vertical room */
+    line-height: 1.6;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-heading;
+  }
+  /* Visible keyboard focus everywhere, not only on shadcn components */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+}
+
+/* WhatsApp-like chat wallpaper */
+.chat-wallpaper {
+  background-color: var(--color-chat-bg);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.035) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+.typing-dot {
+  animation: blink 1.2s infinite both;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Waiting-room TV: a newly called serial glows for a few seconds so eyes find it */
+@keyframes tv-called {
+  0% {
+    box-shadow: 0 0 0 0 rgb(253 224 71 / 0.9);
+    background-color: rgb(253 224 71 / 0.28);
+  }
+  70% {
+    box-shadow: 0 0 0 24px rgb(253 224 71 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(253 224 71 / 0);
+    background-color: rgb(255 255 255 / 0.06);
+  }
+}
+.tv-called {
+  animation: tv-called 1.4s ease-out 3;
+}
+
+/* Scrolling notice line at the bottom of the TV */
+@keyframes tv-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.tv-marquee {
+  animation: tv-marquee 40s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tv-called,
+  .tv-marquee {
+    animation: none;
+  }
+}
