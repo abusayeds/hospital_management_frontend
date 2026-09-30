@@ -6,7 +6,7 @@ import { SOCKET_URL } from "./api";
 
 let socket: Socket | null = null;
 
-const getSocket = (): Socket => {
+export const getSocket = (): Socket => {
   // withCredentials sends the auth cookie, so the server knows which events this user may receive
   socket ??= io(SOCKET_URL, { transports: ["websocket", "polling"], withCredentials: true });
   return socket;
