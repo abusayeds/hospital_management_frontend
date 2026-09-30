@@ -10,7 +10,7 @@
 
 Next.js 16 (App Router, `proxy.ts`, async `params`) · React 19 (React Compiler lint rules) · TypeScript ·
 Tailwind CSS v4 · shadcn/ui on **Base UI** primitives · lucide-react · TanStack Query · React Hook Form + Zod ·
-sonner (toasts) · Recharts · socket.io-client. Fonts: Inter (English/numbers) + **Hind Siliguri** (Bangla).
+sonner (toasts) · Recharts · socket.io-client · react-markdown (knowledge base preview; no raw HTML). Fonts: Inter (English/numbers) + **Hind Siliguri** (Bangla).
 
 ## 2. Run it
 
@@ -47,6 +47,8 @@ AppShell → /auth/me → role area check (403 page) → forced password change 
 | `src/app/print/*` | Print pages (patient card, token) |
 | `src/app/verify/[code]` | **Public** page a QR code opens (genuine / not genuine) |
 | `src/app/queue-display` | Waiting-room TV (`?key=` display key) |
+| `src/app/chat` | **Public** patient chat (Testo Life Assistant); `?embed=1` = compact layout for the widget iframe |
+| `public/widget.js` | One-line website widget: floating button + iframe of `/chat?embed=1` |
 | `src/features/<feature>/` | Screens with their logic; pages stay thin |
 | `src/components/ui/` | shadcn primitives (Base UI) |
 | `src/components/shared/` | Our building blocks: `PageHeader`, `DataTable` (server mode), `StatusBadge`, `StatCard`, `SectionCard`, `EmptyState`, `ConfirmDialog`, skeletons, charts, `RequirePermission` |
@@ -93,13 +95,13 @@ AppShell → /auth/me → role area check (403 page) → forced password change 
 
 | Role | Route | Screen (`src/features/…`) |
 | --- | --- | --- |
-| Admin | `/admin/users`, `/roles`, `/audit-logs`, **`/events`**, `/departments`, `/doctors`, `/services`, `/lab-tests`, `/medicines`, `/settings` (incl. four-eyes switch), `/system-health` | `users/`, `audit/`, `events/`, `master-data/` |
-| Reception | `/reception/register`, `/patients`, `/appointments`, `/queue`, **`/lab-reports`**, `/ai-alerts` | `patients/`, `appointments/`, `queue/`, `lab/lab-lists.tsx`, `ai-alerts/` |
+| Admin | `/admin/users`, `/roles`, `/audit-logs`, `/events`, **`/inbox`**, **`/knowledge`**, **`/channels`**, **`/whatsapp-simulator`**, `/departments`, `/doctors`, `/services`, `/lab-tests`, `/medicines`, `/settings`, `/system-health` | `users/`, `audit/`, `events/`, `inbox/`, `knowledge/`, `channels/`, `master-data/` |
+| Reception | `/reception/register`, `/patients`, `/appointments`, `/queue`, `/lab-reports`, **`/inbox`** (old `/ai-alerts` redirects here) | `patients/`, `appointments/`, `queue/`, `lab/lab-lists.tsx`, `inbox/` |
 | Doctor | `/doctor` (today's numbers + queue + today's visits), `/doctor/queue`, **`/doctor/visit/[appointmentId]`**, **`/doctor/patients`**, **`/doctor/patients/[id]`**, **`/doctor/lab-orders`** | `queue/doctor-queue.tsx`, `visits/`, `lab/` |
 | Nurse | `/nurse` (vitals worklist) | `vitals/` |
 | Lab | `/lab`, **`/lab/orders`** (work board) | `lab/lab-board.tsx`, `lab/lab-order-panel.tsx` |
 | Management | `/management/live-overview` | `live-overview/` |
-| Public | `/`, `/login`, `/chat`, `/queue-display`, **`/verify/[code]`** | `auth/`, `queue-display/`, `print/verify-document.tsx` |
+| Public | `/`, `/login`, **`/chat`** (+ widget), `/queue-display`, `/verify/[code]` | `auth/`, `assistant-chat/`, `queue-display/`, `print/verify-document.tsx` |
 
 ### Clinical screens (Phase 4) — how they work
 - **Nurse worklist** (`vitals/nurse-worklist.tsx`): today's waiting patients in queue order, doctor filter,
@@ -125,6 +127,26 @@ AppShell → /auth/me → role area check (403 page) → forced password change 
 - **Verify page** (`print/verify-document.tsx`): public, shows only genuine/not genuine, number, date, issuer,
   masked patient name.
 
+### Patient assistant screens (Phase 5) — how they work
+- **Web chat** (`assistant-chat/chat-window.tsx` + `rich-messages.tsx`): talks to `/api/v1/assistant/web/*`; the API
+  sets an anonymous httpOnly cookie. Renders the backend's channel-neutral messages: quick-reply chips, doctor
+  cards, slot chips (grouped by morning/evening), patient/appointment choices, confirm/change summary cards,
+  booking success (big serial, add-to-calendar), queue progress, lab status, OTP box with resend timer,
+  handover/emergency notices. Buttons of older turns are disabled. After the first message the socket reconnects so
+  it joins the visitor's room and staff replies appear live. Bangla/English toggle, disclaimer with the emergency
+  number, retry on network errors, fits a 360 px phone (`min-w-0`/`overflow-hidden` on bubbles — keep them).
+  **Never shows the word "AI".** Types mirror `backend/src/modules/assistant/assistant.types.ts`.
+- **Widget:** `<script src="https://<frontend>/widget.js" async></script>` (optional `data-color`).
+- **Inbox** (`inbox/inbox-screen.tsx`): three panes, live via `inbox:updated` / `inbox:alert`; take over, reply
+  (canned replies, Ctrl+Enter), hand back, resolve, tags, notes. Tool calls show as "Assistant checked …" chips.
+  **Header bell** (`inbox/inbox-bell.tsx`): count badge, Web Audio beep (3× for emergencies), emergency toast.
+- **Knowledge Base** (`knowledge/knowledge-screen.tsx`): server-side table, bilingual editor with markdown
+  preview, publish/unpublish, version history, re-index, and **Test the assistant** (passages + scores + answer).
+- **Channels** (`channels/channels-screen.tsx`): web widget snippet, WhatsApp status and webhook URL (copy), test
+  message, development verification codes (hidden in production). **WhatsApp simulator**
+  (`channels/whatsapp-simulator.tsx`): phone-shaped UI drawing the real Cloud API payloads (buttons, lists), sample
+  messages, image test, reset; works without a Meta account.
+
 ## 7. Recipes
 
 **Add a screen:** create `src/features/<x>/<x>-screen.tsx` (wrap in `RequirePermission`), add
@@ -148,4 +170,7 @@ default message is not good enough).
 | No live updates | `NEXT_PUBLIC_API_URL` must point at the backend (sockets bypass the rewrite) |
 | Print prescription/report shows a 503 message | Backend needs `npm run pdf:setup` |
 | AI summary card says "not configured" | Backend AI key missing (see backend guide §4) |
+| Chat says "Sorry, I can't answer right now" | Backend AI key missing or daily budget reached (backend guide §18) |
+| Web chat verification code never arrives | SMS is not built — in development see Admin → Channels → development codes |
+| Staff reply does not appear in the patient's web chat | `NEXT_PUBLIC_API_URL` must point at the backend (socket); the visitor's first message creates the cookie |
 | Redirected to /login repeatedly | Session cookies blocked or backend `CLIENT_URL` does not match this origin |
