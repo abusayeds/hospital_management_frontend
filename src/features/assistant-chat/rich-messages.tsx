@@ -38,16 +38,16 @@ export function QuickReplies({ m, onTap, disabled }: Props<Extract<RichMessage, 
 
 function DoctorCards({ m, lang, onTap, disabled }: Props<Extract<RichMessage, { type: "list" }>>) {
   return (
-    <div className="grid gap-2">
+    <div className="grid min-w-0 grid-cols-1 gap-2">
       {m.items.map((d) => {
         const meta = (d.meta ?? {}) as { initials?: string; department?: string; fee?: string; nextAvailable?: string | null; specialization?: string };
         return (
-          <div key={d.id} className="flex items-center gap-3 rounded-xl border bg-card p-3">
+          <div key={d.id} className="flex min-w-0 items-center gap-3 rounded-xl border bg-card p-3">
             <span aria-hidden className="flex size-11 shrink-0 items-center justify-center rounded-full bg-status-info-bg font-semibold text-status-info-fg">
               {meta.initials ?? <Stethoscope className="size-5" />}
             </span>
             <div className="min-w-0 flex-1">
-              <p className="font-semibold text-heading">{d.label}</p>
+              <p className="truncate font-semibold text-heading">{d.label}</p>
               <p className="truncate text-xs text-muted-foreground">
                 {meta.department}
                 {meta.specialization ? ` · ${meta.specialization}` : ""}
@@ -57,7 +57,7 @@ function DoctorCards({ m, lang, onTap, disabled }: Props<Extract<RichMessage, { 
                 {meta.nextAvailable && <span className="text-status-success-fg"> · {meta.nextAvailable}</span>}
               </p>
             </div>
-            <Button size="sm" disabled={disabled} onClick={() => onTap({ replyId: d.id, label: d.label })}>
+            <Button size="sm" className="shrink-0" disabled={disabled} onClick={() => onTap({ replyId: d.id, label: d.label })}>
               {UI_TEXT[lang].choose}
             </Button>
           </div>

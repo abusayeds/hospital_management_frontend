@@ -53,11 +53,19 @@ function Bubble({ msg, lang, onTap, answered, onRetry }: { msg: ChatMessage; lan
     <div className="flex flex-col items-start gap-1">
       {msg.sender === "staff" && <span className="text-xs font-semibold text-status-info-fg">{t.staffLabel}</span>}
       {rich?.type === "card" ? (
-        <div className="w-full max-w-[92%]">
+        <div className="w-full max-w-[92%] min-w-0">
           <CardMessage m={rich} lang={lang} onTap={tap} disabled={answered} />
         </div>
       ) : (
-        <div className={cn("max-w-[92%] rounded-2xl rounded-bl-md border bg-card px-3.5 py-2.5 shadow-card", msg.sender === "staff" && "border-status-info-border")}>{body}</div>
+        <div
+          className={cn(
+            "max-w-[92%] min-w-0 overflow-hidden rounded-2xl rounded-bl-md border bg-card px-3.5 py-2.5 shadow-card",
+            rich?.type === "list" && "w-full",
+            msg.sender === "staff" && "border-status-info-border",
+          )}
+        >
+          {body}
+        </div>
       )}
       {msg.createdAt && <span className="text-[11px] text-muted-foreground">{clock(msg.createdAt)}</span>}
     </div>
@@ -149,7 +157,7 @@ export function ChatWindow({ embed = false }: { embed?: boolean }) {
   const staffActive = state?.status === "human_active";
 
   return (
-    <div className={cn("flex h-dvh flex-col bg-muted/40", !embed && "mx-auto max-w-2xl md:my-4 md:h-[calc(100dvh-2rem)] md:overflow-hidden md:rounded-2xl md:border md:shadow-card")}>
+    <div className={cn("flex h-dvh w-full flex-col overflow-hidden bg-muted/40", !embed && "mx-auto max-w-2xl md:my-4 md:h-[calc(100dvh-2rem)] md:overflow-hidden md:rounded-2xl md:border md:shadow-card")}>
       <header className="flex items-center gap-3 bg-primary px-3 py-2.5 text-primary-foreground">
         {!embed && (
           <Link href="/" aria-label="Back to home" className="rounded-lg p-1.5 hover:bg-white/15">
@@ -176,7 +184,7 @@ export function ChatWindow({ embed = false }: { embed?: boolean }) {
         <ShieldAlert className="size-3.5 shrink-0" /> {t.disclaimer(emergencyPhone)}
       </p>
 
-      <div role="log" aria-live="polite" aria-label="Conversation" className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
+      <div role="log" aria-live="polite" aria-label="Conversation" className="min-w-0 flex-1 space-y-3 overflow-x-hidden overflow-y-auto px-3 py-4">
         {history.isPending && (
           <p className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
             <Loader2 className="size-4 animate-spin" />
