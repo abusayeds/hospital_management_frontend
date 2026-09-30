@@ -51,7 +51,7 @@ function Overview() {
         <div className="flex flex-wrap items-center gap-3 rounded-xl border border-status-danger-border bg-status-danger-bg px-4 py-3 text-status-danger-fg">
           <Siren className="size-5" aria-hidden />
           <p className="flex-1 text-sm font-medium">{s.ai.pendingHandoffs} patient(s) from the assistant chat are waiting for a staff call-back.</p>
-          <Button size="sm" variant="outline" render={<Link href="/reception/ai-alerts" />} nativeButton={false}>
+          <Button size="sm" variant="outline" render={<Link href="/reception/inbox" />} nativeButton={false}>
             Open assistant alerts
           </Button>
         </div>

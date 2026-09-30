@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronDown, KeyRound, LogOut, Menu, MonitorX } from "lucide-react";
+import { ChevronDown, KeyRound, LogOut, Menu, MonitorX } from "lucide-react";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { SystemStatus } from "@/components/shared/system-status";
@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth";
+import { InboxBell } from "@/features/inbox/inbox-bell";
 import { useLabel } from "@/lib/language";
 import { findNavItem, Role } from "@/lib/navigation";
 import { LanguageToggle } from "./language-toggle";
@@ -54,20 +55,7 @@ export function AppHeader({ role, onMenuClick }: { role: Role; onMenuClick?: () 
       <SystemStatus className="hidden md:inline-flex" />
       <LanguageToggle className="hidden sm:inline-flex" />
 
-      <DropdownMenu>
-        <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label="Notifications" />}>
-          <Bell className="size-5" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-72">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <div className="px-3 py-6 text-center text-sm text-muted-foreground">
-            Queue updates are already live; reminders and follow-up notifications arrive in Phase 6.
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <InboxBell inboxHref={role === "super_admin" ? "/admin/inbox" : "/reception/inbox"} />
 
       {user && (
         <DropdownMenu>

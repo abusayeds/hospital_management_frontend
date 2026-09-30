@@ -15,7 +15,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/dashboard", destination: "/management/live-overview", permanent: false },
       { source: "/dashboard/appointments", destination: "/reception/appointments", permanent: false },
-      { source: "/dashboard/chats", destination: "/reception/ai-alerts", permanent: false },
+      { source: "/dashboard/chats", destination: "/reception/inbox", permanent: false },
+      { source: "/reception/ai-alerts", destination: "/reception/inbox", permanent: false },
       { source: "/queue", destination: "/queue-display", permanent: false },
     ];
   },
