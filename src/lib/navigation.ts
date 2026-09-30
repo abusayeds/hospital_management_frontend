@@ -215,7 +215,7 @@ export const NAVIGATION: Record<Role, NavSection[]> = {
         { label: "Appointments", labelBn: "অ্যাপয়েন্টমেন্ট", href: "/reception/appointments", icon: CalendarDays, permission: "appointment:read" },
         { label: "Queue", labelBn: "সিরিয়াল", href: "/reception/queue", icon: ListOrdered, permission: "queue:read", description: "Every doctor's live queue; recall or send back." },
         { label: "Lab Reports", labelBn: "ল্যাব রিপোর্ট", href: "/reception/lab-reports", icon: FlaskConical, permission: "lab_report:deliver", description: "Print verified reports and hand them over." },
-        { label: "Assistant Alerts", labelBn: "অ্যাসিস্ট্যান্ট অ্যালার্ট", href: "/reception/ai-alerts", icon: MessageSquareWarning, permission: "assistant_chat:manage" },
+        { label: "Assistant Alerts", labelBn: "অ্যাসিস্ট্যান্ট অ্যালার্ট", href: "/reception/ai-alerts", icon: MessageSquareWarning, permission: "inbox:manage" },
         { label: "Collect Payment", labelBn: "পেমেন্ট গ্রহণ", href: "/reception/payments", icon: CreditCard, permission: "bill:collect", phase: 7, description: "Consultation and test payments with printed receipts." },
       ],
     },

@@ -33,7 +33,7 @@ export function AiAlertsScreen() {
         title="Assistant Alerts"
         description="Patients the Testo Life assistant handed over to staff — emergencies first. Call them back, then mark as resolved."
       />
-      <RequirePermission permission="assistant_chat:manage">
+      <RequirePermission permission="inbox:manage">
         <AlertsContent />
       </RequirePermission>
     </div>
