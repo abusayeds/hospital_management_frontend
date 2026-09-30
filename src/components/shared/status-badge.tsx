@@ -42,6 +42,9 @@ export const STATUS_CONFIG = {
   sample_collected: { tone: "active", label: "Sample collected", labelBn: "স্যাম্পল নেওয়া হয়েছে" },
   processing: { tone: "active", label: "Processing", labelBn: "প্রক্রিয়াধীন" },
   ready: { tone: "success", label: "Report ready", labelBn: "রিপোর্ট প্রস্তুত" },
+  ordered: { tone: "info", label: "Ordered", labelBn: "অর্ডার হয়েছে" },
+  awaiting_verification: { tone: "waiting", label: "To verify", labelBn: "যাচাই বাকি" },
+  delivered: { tone: "neutral", label: "Delivered", labelBn: "হস্তান্তরিত" },
   // pharmacy
   in_stock: { tone: "success", label: "In stock", labelBn: "স্টকে আছে" },
   low_stock: { tone: "waiting", label: "Low stock", labelBn: "স্টক কম" },

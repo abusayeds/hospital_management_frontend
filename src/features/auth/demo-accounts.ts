@@ -10,6 +10,7 @@ export const DEMO_ACCOUNTS: { role: Role; email: string }[] = [
   { role: "doctor", email: "doctor@testolife.test" },
   { role: "nurse", email: "nurse@testolife.test" },
   { role: "lab_technician", email: "lab@testolife.test" },
+  { role: "lab_technician", email: "lab2@testolife.test" }, // second verifier (four-eyes)
   { role: "pharmacist", email: "pharmacy@testolife.test" },
   { role: "accounts", email: "accounts@testolife.test" },
   { role: "patient", email: "patient@testolife.test" },

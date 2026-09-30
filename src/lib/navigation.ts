@@ -25,7 +25,6 @@ import {
   Settings,
   ShieldCheck,
   ShoppingCart,
-  Siren,
   Sparkles,
   Stethoscope,
   TestTube2,
@@ -167,6 +166,7 @@ export const NAVIGATION: Record<Role, NavSection[]> = {
         { label: "Users & Staff", labelBn: "ইউজার ও স্টাফ", href: "/admin/users", icon: Users, permission: "user:manage", description: "Create staff accounts and assign roles." },
         { label: "Roles & Permissions", labelBn: "রোল ও পারমিশন", href: "/admin/roles", icon: ShieldCheck, permission: "user:manage", description: "Least-privilege access for every role." },
         { label: "Audit Logs", labelBn: "অডিট লগ", href: "/admin/audit-logs", icon: ScrollText, permission: "audit:read", description: "Who did what and when, for every sensitive action." },
+        { label: "Event Log", labelBn: "ইভেন্ট লগ", href: "/admin/events", icon: Workflow, permission: "audit:read", description: "Business events and which automations processed them." },
       ],
     },
     {
@@ -214,6 +214,7 @@ export const NAVIGATION: Record<Role, NavSection[]> = {
         { label: "Patients", labelBn: "রোগী তালিকা", href: "/reception/patients", icon: Users, permission: "patient:read_basic", description: "Instant search by name, phone or patient code." },
         { label: "Appointments", labelBn: "অ্যাপয়েন্টমেন্ট", href: "/reception/appointments", icon: CalendarDays, permission: "appointment:read" },
         { label: "Queue", labelBn: "সিরিয়াল", href: "/reception/queue", icon: ListOrdered, permission: "queue:read", description: "Every doctor's live queue; recall or send back." },
+        { label: "Lab Reports", labelBn: "ল্যাব রিপোর্ট", href: "/reception/lab-reports", icon: FlaskConical, permission: "lab_report:deliver", description: "Print verified reports and hand them over." },
         { label: "Assistant Alerts", labelBn: "অ্যাসিস্ট্যান্ট অ্যালার্ট", href: "/reception/ai-alerts", icon: MessageSquareWarning, permission: "assistant_chat:manage" },
         { label: "Collect Payment", labelBn: "পেমেন্ট গ্রহণ", href: "/reception/payments", icon: CreditCard, permission: "bill:collect", phase: 7, description: "Consultation and test payments with printed receipts." },
       ],
@@ -226,34 +227,19 @@ export const NAVIGATION: Record<Role, NavSection[]> = {
       titleBn: "ক্লিনিক্যাল",
       items: [
         { label: "My Queue", labelBn: "আমার সিরিয়াল", href: "/doctor/queue", icon: ListOrdered, permission: "queue:call_next", description: "Call the next patient; the TV announces the serial." },
-        { label: "Patients & EMR", labelBn: "রোগী ও EMR", href: "/doctor/patients", icon: ClipboardList, permission: "patient:read_full", phase: 4, description: "Full visit history, allergies, previous prescriptions." },
-        { label: "Prescriptions", labelBn: "প্রেসক্রিপশন", href: "/doctor/prescriptions", icon: FileText, permission: "prescription:create", phase: 4, description: "Fast prescription writing with templates." },
-        { label: "Lab Orders", labelBn: "ল্যাব অর্ডার", href: "/doctor/lab-orders", icon: TestTube2, permission: "lab_order:create", phase: 4, description: "Order tests and see results as soon as they are ready." },
+        { label: "Patients & EMR", labelBn: "রোগী ও EMR", href: "/doctor/patients", icon: ClipboardList, permission: "visit:read", description: "Full visit history, allergies, previous prescriptions." },
+        { label: "Lab Orders", labelBn: "ল্যাব অর্ডার", href: "/doctor/lab-orders", icon: TestTube2, permission: "lab_order:create", description: "Order tests and see results as soon as they are ready." },
       ],
     },
   ],
-  nurse: [
-    { items: [home("nurse")] },
-    {
-      title: "Nursing",
-      titleBn: "নার্সিং",
-      items: [
-        { label: "Waiting Patients", labelBn: "অপেক্ষমাণ রোগী", href: "/nurse/waiting", icon: Users, permission: "queue:read", phase: 4, description: "Patients checked in and waiting for vitals." },
-        { label: "Record Vitals", labelBn: "ভাইটালস লিখুন", href: "/nurse/vitals", icon: HeartPulse, permission: "vitals:create", phase: 4, description: "BP, pulse, temperature, SpO₂, weight — with abnormal-value warnings." },
-        { label: "Triage", labelBn: "ট্রায়াজ", href: "/nurse/triage", icon: Siren, permission: "vitals:create", phase: 4, description: "Flag urgent patients so they are seen first." },
-      ],
-    },
-  ],
+  nurse: [{ items: [home("nurse")] }],
   lab_technician: [
     { items: [home("lab_technician")] },
     {
       title: "Laboratory",
       titleBn: "ল্যাবরেটরি",
       items: [
-        { label: "Lab Orders", labelBn: "ল্যাব অর্ডার", href: "/lab/orders", icon: ClipboardList, permission: "lab_order:read", phase: 4, description: "Tests ordered by doctors, paid and ready to process." },
-        { label: "Sample Collection", labelBn: "স্যাম্পল সংগ্রহ", href: "/lab/samples", icon: TestTube2, permission: "lab_result:create", phase: 4, description: "Barcode labels and collection tracking." },
-        { label: "Result Entry", labelBn: "রেজাল্ট এন্ট্রি", href: "/lab/results", icon: FlaskConical, permission: "lab_result:create", phase: 4, description: "Enter results with reference ranges and flags." },
-        { label: "Reports", labelBn: "রিপোর্ট", href: "/lab/reports", icon: FileText, permission: "lab_report:upload", phase: 4, description: "Verified PDF reports delivered to patients." },
+        { label: "Work Board", labelBn: "কাজের বোর্ড", href: "/lab/orders", icon: ClipboardList, permission: "lab_order:read", description: "Collect samples, enter results, verify and release reports." },
       ],
     },
   ],

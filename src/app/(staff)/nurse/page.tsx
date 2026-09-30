@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { NurseDashboard } from "@/components/dashboards/nurse-dashboard";
+import { NurseWorklist } from "@/features/vitals/nurse-worklist";
 
-export const metadata: Metadata = { title: "Nurse dashboard" };
+export const metadata: Metadata = { title: "Vitals worklist" };
 
 export default function Page() {
-  return <NurseDashboard />;
+  return <NurseWorklist />;
 }

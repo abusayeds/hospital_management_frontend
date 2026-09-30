@@ -33,7 +33,11 @@ export type ApiErrorCode =
   | "PASSWORD_CHANGE_REQUIRED"
   | "SESSION_EXPIRED"
   | "SESSION_REVOKED"
-  | "CSRF_REJECTED";
+  | "CSRF_REJECTED"
+  | "VISIT_OPEN"
+  | "VISIT_CLOSED"
+  | "ALLERGY_CONFLICT"
+  | "FOUR_EYES_REQUIRED";
 
 export type FieldError = { path: string; message: string };
 

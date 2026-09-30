@@ -1,25 +1,151 @@
-# Testolife — Frontend
+# Testolife — Frontend Guide (read this first)
 
-Next.js 16 (App Router) · TypeScript · Tailwind v4 · shadcn/ui · TanStack Query.
+> **Complete handover document for the frontend.** Read it together with the backend guide
+> [`../backend/README.md`](../backend/README.md) — the owner's working rules, roadmap, API, permissions and
+> phase log live there (§0, §3, §7, §13, §17). Everything here is specific to the Next.js app.
+
+---
+
+## 1. Stack
+
+Next.js 16 (App Router, `proxy.ts`, async `params`) · React 19 (React Compiler lint rules) · TypeScript ·
+Tailwind CSS v4 · shadcn/ui on **Base UI** primitives · lucide-react · TanStack Query · React Hook Form + Zod ·
+sonner (toasts) · Recharts · socket.io-client. Fonts: Inter (English/numbers) + **Hind Siliguri** (Bangla).
+
+## 2. Run it
 
 ```bash
+cd frontend
 cp .env.example .env.local
 npm install
-npm run dev      # http://localhost:3000
-npm run build    # production build
+npm run dev        # http://localhost:3000  (the backend must run on :5000)
+npm run build      # production build — must stay clean
 npm run lint
+npx tsc --noEmit   # typecheck (run `npx next typegen` first after adding routes)
 ```
 
-Where things live:
+| Variable (`.env.local`) | Meaning |
+| --- | --- |
+| `BACKEND_URL` | Where the Next.js server forwards `/api/v1/*` (server-side only), default `http://localhost:5000` |
+| `NEXT_PUBLIC_API_URL` | Socket.IO connects here directly (rewrites do not carry websockets) |
+
+Never put secrets in `NEXT_PUBLIC_*` — they are visible in the browser.
+
+## 3. How the app is put together
+
+```
+browser → /api/v1/* on the SAME origin → next.config.ts rewrite → Express API
+          (httpOnly cookies are first-party; no token ever reaches JavaScript)
+proxy.ts → no session cookie on a protected path → /login?next=…
+AppShell → /auth/me → role area check (403 page) → forced password change → idle sign-out (15 min)
+```
 
 | Path | Purpose |
 | --- | --- |
-| `src/app/(staff)/<role>/` | Staff role areas sharing the AppShell; `[...slug]` = placeholder pages from the nav config |
-| `src/app/patient/` | Mobile-first patient portal |
-| `src/features/` | Screens with their logic (appointments, AI alerts, queue display, login, design system) |
-| `src/components/shared/` | Reusable building blocks (DataTable, StatusBadge, StatCard, ConfirmDialog, …) |
-| `src/components/ui/` | shadcn/ui primitives |
-| `src/lib/navigation.ts` | The single role + menu config |
-| `src/lib/api.ts` | The single backend client and error-message mapping |
+| `src/app/(staff)/<role>/` | Role areas sharing `AppShell`. `page.tsx` = dashboard; `[...slug]/page.tsx` = placeholder generated from the nav config; real screens are normal folders that override it |
+| `src/app/patient/` | Mobile-first patient area (`PatientShell`, bottom tabs) — Phase 5 |
+| `src/app/print/*` | Print pages (patient card, token) |
+| `src/app/verify/[code]` | **Public** page a QR code opens (genuine / not genuine) |
+| `src/app/queue-display` | Waiting-room TV (`?key=` display key) |
+| `src/features/<feature>/` | Screens with their logic; pages stay thin |
+| `src/components/ui/` | shadcn primitives (Base UI) |
+| `src/components/shared/` | Our building blocks: `PageHeader`, `DataTable` (server mode), `StatusBadge`, `StatCard`, `SectionCard`, `EmptyState`, `ConfirmDialog`, skeletons, charts, `RequirePermission` |
+| `src/lib/api.ts` | **The only backend client** (`apiFetch`, `apiFetchPage`), silent refresh on 401, friendly bilingual error messages (`getErrorMessage`, `notifyError`), `ApiErrorCode` list |
+| `src/lib/auth.tsx` | `AuthProvider`, `useAuth()` → `user`, `can(permission)`, logout |
+| `src/lib/navigation.ts` | **One config** for roles and menus; each item names the permission it needs (and `phase` for placeholders) |
+| `src/lib/roadmap.ts` | The 7 phases (placeholder pages say when a feature arrives) |
+| `src/lib/socket.ts` | `useLiveEvents(events, onEvent)` — refetch on server signals |
+| `src/lib/permissions.ts`, `src/lib/clinical-rules.ts` | **Generated copies** of backend files (`npm run shared:export` in backend/). Never edit by hand |
 
-Design rules and architecture: [../docs/PROJECT_CONTEXT.md](../docs/PROJECT_CONTEXT.md).
+## 4. Rules for writing screens
+
+- **Data:** TanStack Query only. Errors toast automatically (QueryCache/MutationCache); opt out with
+  `meta: { silent: true }` when the screen handles the error itself. Live screens call
+  `useLiveEvents([...], refresh)` and invalidate queries — socket payloads are ids only.
+- **Permissions:** menus filter by `can()`; screens wrap themselves in `<RequirePermission permission="…">`.
+  Hiding is UX only — the API enforces everything.
+- **Forms:** React Hook Form + Zod; use `useWatch` (not `watch`) with the React Compiler; the server's
+  `VALIDATION_ERROR` details map to fields.
+- **React Compiler lint:** no `setState` inside `useEffect` bodies. Initialise with lazy `useState(() => …)` and
+  remount with a `key` when the source record changes (see `vitals-form.tsx`, `visit-workspace.tsx`).
+- **Base UI:** links rendered as buttons use `render={<Link href=… />}` + `nativeButton={false}`;
+  `GroupLabel` must be inside a `Group`.
+- **Next.js 16:** `params` are async (`PageProps<"/route/[id]">`, `await params`). After adding routes run
+  `npx next typegen` before `tsc`.
+- **Wording:** patient-facing screens (landing, `/chat`, patient portal, `/verify`) must **not** say "AI".
+  Staff/doctor screens show AI output only with the label **"AI-generated — verify before use"**.
+
+## 5. Design system
+
+- Tokens only (CSS variables in `globals.css`), no hard-coded colours. Primary teal `#0F766E`; headings
+  `#0F172A`; muted `#64748B`; white cards, 1px border, soft `shadow-card`, `rounded-xl`.
+- **Status colours are semantic** (dot + text, never colour alone) via `<StatusBadge status="…" />` and
+  `STATUS_CONFIG`: waiting = amber · active/in consultation = blue · success/completed/ready = green ·
+  cancelled/no-show/delivered = gray · danger/emergency/critical = red · booked/ordered = teal.
+  Vital/lab flag colours: `LEVEL_STYLE` (vitals) and `FLAG_STYLE` (lab).
+- Touch targets ≥ 44 px for primary actions (`size="lg"`/`"xl"`); visible focus rings; every list has
+  search + empty state + skeleton; destructive actions use `ConfirmDialog`.
+- Bilingual labels where staff read them (`label` + `labelBn`); EN/বাং toggle for config labels;
+  Bangla text uses `font-bangla`.
+- `/design-system` shows every component.
+
+## 6. Screens by role (current)
+
+| Role | Route | Screen (`src/features/…`) |
+| --- | --- | --- |
+| Admin | `/admin/users`, `/roles`, `/audit-logs`, **`/events`**, `/departments`, `/doctors`, `/services`, `/lab-tests`, `/medicines`, `/settings` (incl. four-eyes switch), `/system-health` | `users/`, `audit/`, `events/`, `master-data/` |
+| Reception | `/reception/register`, `/patients`, `/appointments`, `/queue`, **`/lab-reports`**, `/ai-alerts` | `patients/`, `appointments/`, `queue/`, `lab/lab-lists.tsx`, `ai-alerts/` |
+| Doctor | `/doctor` (today's numbers + queue + today's visits), `/doctor/queue`, **`/doctor/visit/[appointmentId]`**, **`/doctor/patients`**, **`/doctor/patients/[id]`**, **`/doctor/lab-orders`** | `queue/doctor-queue.tsx`, `visits/`, `lab/` |
+| Nurse | `/nurse` (vitals worklist) | `vitals/` |
+| Lab | `/lab`, **`/lab/orders`** (work board) | `lab/lab-board.tsx`, `lab/lab-order-panel.tsx` |
+| Management | `/management/live-overview` | `live-overview/` |
+| Public | `/`, `/login`, `/chat`, `/queue-display`, **`/verify/[code]`** | `auth/`, `queue-display/`, `print/verify-document.tsx` |
+
+### Clinical screens (Phase 4) — how they work
+- **Nurse worklist** (`vitals/nurse-worklist.tsx`): today's waiting patients in queue order, doctor filter,
+  a sheet with big inputs; flags and BMI appear while typing (shared `clinical-rules.ts`), "Save & next".
+- **Doctor consultation** (`visits/visit-workspace.tsx`), three columns:
+  1. patient card (allergies in red, chronic conditions, today's vitals with flags), **AI visit summary card**
+     (`ai-summary-card.tsx`, staff-only label, regenerate, thumbs, "Insert into notes"), history
+     (`patient-history.tsx`: previous visits → read-only sheet, lab reports with live updates, vitals trend);
+  2. notes (`visit-notes.tsx`): complaints chips, HPI, examination, diagnosis, investigations (lab test search),
+     advice Bangla/English, follow-up (7/14/30 days or a date), referral;
+  3. prescription (`rx-editor.tsx`): medicine search (Enter adds the first match, free text allowed), dose presets
+     (`1+0+1` …), timing, days or "চলবে" (continue), live Bangla instructions, allergy and duplicate-generic
+     warnings, apply / save templates.
+  - **Autosave** 1.2 s after typing stops (status: Saving… / Saved / Unsaved). If the server answers
+    `ALLERGY_CONFLICT`, a dialog asks for a reason ("Prescribe anyway") or removes the medicine.
+  - **Close visit** asks for confirmation (needs a diagnosis); closed visits show the signed record
+    (`visit-record.tsx`) with **Print prescription** (opens the PDF) and **Add addendum**.
+  - The queue's **Open record** button opens this page; Call next is refused while a visit is open.
+- **Lab board** (`lab/lab-board.tsx`): columns Ordered → Sample collected → Processing → To verify → Ready;
+  urgent first; card → sheet (`lab-order-panel.tsx`) with the action for the current step, result entry with
+  live flags, four-eyes hint, send back with reason, print report, hand over.
+- **Reception lab reports / doctor lab orders** (`lab/lab-lists.tsx`): searchable lists → same panel in a sheet.
+- **Verify page** (`print/verify-document.tsx`): public, shows only genuine/not genuine, number, date, issuer,
+  masked patient name.
+
+## 7. Recipes
+
+**Add a screen:** create `src/features/<x>/<x>-screen.tsx` (wrap in `RequirePermission`), add
+`src/app/(staff)/<role>/<path>/page.tsx` (thin, exports `metadata`), add/adjust the menu item in
+`lib/navigation.ts` (permission, remove `phase`), `npx next typegen && npx tsc --noEmit && npm run lint`.
+
+**Add a status:** add it to `STATUS_CONFIG` in `components/shared/status-badge.tsx` with tone + bilingual label.
+
+**Use a clinical rule in the browser:** import from `@/lib/clinical-rules` (generated). Change the rule in
+`backend/src/shared/clinical-rules.ts`, run Prettier there, then `npm run shared:export`.
+
+**New API error code:** add it to `ApiErrorCode` in `lib/api.ts` (and a friendly message in `FRIENDLY` if the
+default message is not good enough).
+
+## 8. Troubleshooting
+
+| Problem | Fix |
+| --- | --- |
+| `LayoutProps`/`PageProps` type errors | `npx next typegen` |
+| Every API call fails | Backend not running on `BACKEND_URL`; check `/api/v1/health` |
+| No live updates | `NEXT_PUBLIC_API_URL` must point at the backend (sockets bypass the rewrite) |
+| Print prescription/report shows a 503 message | Backend needs `npm run pdf:setup` |
+| AI summary card says "not configured" | Backend AI key missing (see backend guide §4) |
+| Redirected to /login repeatedly | Session cookies blocked or backend `CLIENT_URL` does not match this origin |

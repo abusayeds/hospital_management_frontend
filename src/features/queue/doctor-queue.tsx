@@ -1,7 +1,8 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowDownToLine, BellRing, Clock, Loader2, Megaphone, PhoneForwarded, UserCheck } from "lucide-react";
+import { AlertTriangle, ArrowDownToLine, BellRing, Clock, FileText, Loader2, Megaphone, PhoneForwarded, UserCheck } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -113,9 +114,15 @@ export function DoctorQueuePanel({ doctorId, mode }: { doctorId?: string; mode: 
           )}
 
           <div className="mt-auto flex flex-wrap gap-2 pt-6">
+            {isDoctor && q.current && (
+              <Button size="xl" className="h-16 min-w-52 flex-1 text-lg" render={<Link href={`/doctor/visit/${q.current.id}`} />} nativeButton={false}>
+                <FileText className="size-6" /> Open record
+              </Button>
+            )}
             {isDoctor && (
               <Button
                 size="xl"
+                variant={q.current ? "outline" : "default"}
                 className="h-16 min-w-60 flex-1 text-lg"
                 disabled={run.isPending || (!q.current && q.waiting.length === 0)}
                 onClick={() => run.mutate({ path: `/queue/${id}/call-next` })}

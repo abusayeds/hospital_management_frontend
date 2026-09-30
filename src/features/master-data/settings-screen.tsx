@@ -11,6 +11,7 @@ import { SectionCard } from "@/components/shared/section-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch, getErrorMessage } from "@/lib/api";
 import { HospitalSettings } from "@/lib/master-data";
@@ -67,6 +68,7 @@ function SettingsForm({ initial }: { initial: HospitalSettings }) {
           cancellationCutoffMinutes: Number(f.cancellationCutoffMinutes),
           defaultSlotMinutes: Number(f.defaultSlotMinutes),
           displayNotice: f.displayNotice?.trim() ?? "",
+          labFourEyes: f.labFourEyes !== false,
         },
       }),
     meta: { silent: true },
@@ -135,6 +137,16 @@ function SettingsForm({ initial }: { initial: HospitalSettings }) {
         <SectionCard title="Waiting-room TV" bodyClassName="space-y-1.5">
           <Label htmlFor="set-displayNotice">Scrolling notice (bottom of the TV screen)</Label>
           <Textarea id="set-displayNotice" rows={3} value={f.displayNotice ?? ""} onChange={(e) => setF({ ...f, displayNotice: e.target.value })} />
+        </SectionCard>
+
+        <SectionCard title="Laboratory" bodyClassName="flex items-start gap-3">
+          <Switch id="set-labFourEyes" checked={f.labFourEyes !== false} onCheckedChange={(v) => setF({ ...f, labFourEyes: v })} />
+          <Label htmlFor="set-labFourEyes" className="block space-y-1 font-normal">
+            <span className="block font-medium text-heading">Four-eyes verification</span>
+            <span className="block text-sm text-muted-foreground">
+              A lab report is released only after a second person verifies the results. Turn off only for a single-technician lab.
+            </span>
+          </Label>
         </SectionCard>
       </div>
     </form>

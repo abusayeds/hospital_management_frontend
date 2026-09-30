@@ -103,6 +103,7 @@ export type HospitalSettings = {
   cancellationCutoffMinutes: number;
   defaultSlotMinutes: number;
   displayNotice?: string;
+  labFourEyes: boolean;
 };
 
 // Bangladesh week starts on Saturday; Friday is the usual weekly holiday
