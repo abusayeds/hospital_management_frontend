@@ -77,6 +77,7 @@ type Detail = {
 };
 
 const FILTERS: { id: string; label: string }[] = [
+  { id: "open", label: "Open" },
   { id: "needs_human", label: "Needs human" },
   { id: "emergency", label: "Emergency" },
   { id: "human_active", label: "Human active" },
@@ -409,7 +410,7 @@ function ConversationPane({ id, onChanged }: { id: string; onChanged: () => void
 /** Staff inbox: assistant conversations, live — take over, reply, hand back, resolve */
 export function InboxScreen() {
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState("needs_human");
+  const [filter, setFilter] = useState("open");
   const [channel, setChannel] = useState("");
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
