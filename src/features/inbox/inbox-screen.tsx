@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Globe,
   Hand,
+  Mail,
   Loader2,
   MessageCircle,
   MessagesSquare,
@@ -32,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { apiFetch, apiFetchPage } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useLiveEvents } from "@/lib/socket";
+import { useInboxSummary } from "./inbox-bell";
 import { cn } from "@/lib/utils";
 
 type Status = "bot_active" | "needs_human" | "human_active" | "resolved";
@@ -78,6 +80,7 @@ type Detail = {
 
 const FILTERS: { id: string; label: string }[] = [
   { id: "open", label: "Open" },
+  { id: "unread", label: "Unread" },
   { id: "needs_human", label: "Needs human" },
   { id: "emergency", label: "Emergency" },
   { id: "human_active", label: "Human active" },
@@ -302,7 +305,7 @@ function ContextPane({ d, onChanged }: { d: Detail; onChanged: () => void }) {
   );
 }
 
-function ConversationPane({ id, onChanged }: { id: string; onChanged: () => void }) {
+function ConversationPane({ id, onChanged, onClose }: { id: string; onChanged: () => void; onClose: () => void }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const key = ["inbox", "conversation", id];
@@ -319,6 +322,14 @@ function ConversationPane({ id, onChanged }: { id: string; onChanged: () => void
       queryClient.setQueryData(key, d);
       onChanged();
       toast.success(path === "takeover" ? "You are handling this chat — the assistant is paused" : path === "handback" ? "Handed back to the assistant" : "Marked as resolved");
+    },
+  });
+  const markUnread = useMutation({
+    mutationFn: () => apiFetch(`/assistant/inbox/conversations/${id}/unread`, { method: "POST" }),
+    onSuccess: () => {
+      toast.success("Marked as unread");
+      onChanged();
+      onClose();
     },
   });
   const reply = useMutation({
@@ -358,6 +369,9 @@ function ConversationPane({ id, onChanged }: { id: string; onChanged: () => void
                 <Undo2 /> Hand back to bot
               </Button>
             )}
+            <Button size="sm" variant="ghost" disabled={markUnread.isPending} onClick={() => markUnread.mutate()} title="Keep this chat in Unread for later or for a colleague">
+              <Mail /> Mark unread
+            </Button>
             {c.status !== "resolved" && (
               <Button size="sm" variant="outline" disabled={action.isPending} onClick={() => action.mutate("resolve")}>
                 <CheckCircle2 /> Resolve
@@ -418,6 +432,21 @@ export function InboxScreen() {
   const list = useQuery({ queryKey: ["inbox", "list", filter, channel, q], queryFn: () => apiFetchPage<ListItem>(`/assistant/inbox/conversations?${params}`) });
   const refresh = useCallback(() => queryClient.invalidateQueries({ queryKey: ["inbox"] }), [queryClient]);
   useLiveEvents(["inbox:updated", "inbox:alert"], refresh);
+  const summary = useInboxSummary(true).data;
+  const countFor = (f: string) =>
+    !summary
+      ? 0
+      : f === "open"
+        ? summary.needsHuman + summary.humanActive
+        : f === "unread"
+          ? summary.unreadChats
+          : f === "needs_human"
+            ? summary.needsHuman
+            : f === "human_active"
+              ? summary.humanActive
+              : f === "emergency"
+                ? summary.emergency
+                : 0;
 
   return (
     <RequirePermission permission="inbox:manage">
@@ -427,6 +456,14 @@ export function InboxScreen() {
             <h1 className="flex items-center gap-2 text-lg font-semibold text-heading">
               <MessagesSquare className="size-5" /> Inbox
             </h1>
+            {summary && (
+              <p className="text-xs text-muted-foreground">
+                <span className={summary.needsHuman ? "font-semibold text-status-waiting-fg" : ""}>{summary.needsHuman} waiting for staff</span> ·{" "}
+                <span className={summary.unreadMessages ? "font-semibold text-heading" : ""}>
+                  {summary.unreadMessages} unread message{summary.unreadMessages === 1 ? "" : "s"}
+                </span>
+              </p>
+            )}
             <div className="flex flex-wrap gap-1">
               {FILTERS.map((f) => (
                 <button
@@ -436,6 +473,7 @@ export function InboxScreen() {
                   className={cn("rounded-full border px-2.5 py-1 text-xs", filter === f.id ? "border-primary bg-primary text-primary-foreground" : "hover:bg-muted")}
                 >
                   {f.label}
+                  {countFor(f.id) > 0 && <span className="ml-1 font-semibold tabular-nums">{countFor(f.id)}</span>}
                 </button>
               ))}
             </div>
@@ -470,15 +508,22 @@ export function InboxScreen() {
                   >
                     {c.channel === "whatsapp" ? <MessageCircle className="mt-0.5 size-4 shrink-0 text-emerald-600" /> : <Globe className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
                     <div className="min-w-0 flex-1">
-                      <p className="flex items-center gap-1.5 text-sm font-medium text-heading">
+                      <p className={cn("flex items-center gap-1.5 text-sm text-heading", c.unreadCount > 0 ? "font-bold" : "font-medium")}>
+                        {c.unreadCount > 0 && <span className="size-2 shrink-0 rounded-full bg-primary" aria-hidden />}
                         <span className="truncate">{c.displayName}</span>
                         {c.emergency && <AlertTriangle className="size-3.5 shrink-0 text-status-danger-fg" aria-label="Emergency" />}
                         <span className="ml-auto shrink-0 text-[11px] font-normal text-muted-foreground">{ago(c.lastMessageAt)}</span>
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">{c.lastPreview}</p>
+                      <p className={cn("truncate text-xs", c.unreadCount > 0 ? "font-medium text-heading" : "text-muted-foreground")}>{c.lastPreview}</p>
                       <div className="mt-1 flex items-center gap-1">
                         <StatusBadge tone={STATUS_TONE[c.status].tone}>{STATUS_TONE[c.status].label}</StatusBadge>
-                        {c.unreadCount > 0 && <span className="ml-auto rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">{c.unreadCount}</span>}
+                        {c.unreadCount > 0 ? (
+                          <span className="ml-auto rounded-full bg-primary px-1.5 text-[11px] font-semibold text-primary-foreground">
+                            {c.unreadCount} unread
+                          </span>
+                        ) : (
+                          <span className="ml-auto text-[11px] text-muted-foreground">Read</span>
+                        )}
                       </div>
                     </div>
                   </button>
@@ -493,7 +538,7 @@ export function InboxScreen() {
               <button type="button" onClick={() => setOpenId(null)} className="border-b px-4 py-2 text-left text-sm text-primary lg:hidden">
                 ← Conversations
               </button>
-              <ConversationPane key={openId} id={openId} onChanged={refresh} />
+              <ConversationPane key={openId} id={openId} onChanged={refresh} onClose={() => setOpenId(null)} />
             </>
           ) : (
             <EmptyState icon={MessagesSquare} title="Choose a conversation" description="Emergencies are pinned at the top in red." className="m-auto" />

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useInboxSummary } from "@/features/inbox/inbox-bell";
 import { useAuth } from "@/lib/auth";
 import { useLabel } from "@/lib/language";
 import { isActive, NAVIGATION, NavItem, Role, ROLES, SHARED_LINKS } from "@/lib/navigation";
@@ -22,6 +23,9 @@ export function SidebarNav({ role, collapsed = false, onToggleCollapsed, onNavig
   const pathname = usePathname();
   const t = useLabel();
   const { can } = useAuth();
+  // Chats waiting for staff (or with unread patient messages) — shown on the Inbox link
+  const inbox = useInboxSummary(can("inbox:manage"));
+  const badgeFor = (item: NavItem) => (item.href.endsWith("/inbox") ? (inbox.data?.waitingChats ?? 0) : 0);
 
   // Only items the user's permissions allow; sections with nothing left disappear
   const sections = NAVIGATION[role]
@@ -52,6 +56,8 @@ export function SidebarNav({ role, collapsed = false, onToggleCollapsed, onNavig
                 collapsed={collapsed}
                 label={t(item)}
                 onNavigate={onNavigate}
+                badge={badgeFor(item)}
+                urgent={item.href.endsWith("/inbox") && Boolean(inbox.data?.emergency)}
               />
             ))}
           </div>
@@ -104,12 +110,16 @@ function NavLink({
   collapsed,
   label,
   onNavigate,
+  badge = 0,
+  urgent = false,
 }: {
   item: NavItem;
   active: boolean;
   collapsed: boolean;
   label: string;
   onNavigate?: () => void;
+  badge?: number;
+  urgent?: boolean;
 }) {
   const Icon = item.icon;
   const className = cn(
@@ -124,6 +134,18 @@ function NavLink({
       {active && <span aria-hidden className="absolute top-2 bottom-2 left-0 w-[3px] rounded-r-full bg-sidebar-primary" />}
       <Icon className={cn("size-[18px] shrink-0", active ? "text-sidebar-primary" : "text-muted-foreground group-hover:text-heading")} aria-hidden />
       {!collapsed && <span className="truncate">{label}</span>}
+      {badge > 0 && (
+        <span
+          aria-label={`${badge} waiting`}
+          className={cn(
+            "flex min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] leading-5 font-bold text-white",
+            urgent ? "bg-status-danger-dot" : "bg-primary",
+            collapsed ? "absolute top-1 right-1 min-w-4 px-1 text-[10px] leading-4" : "ml-auto",
+          )}
+        >
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
     </>
   );
 

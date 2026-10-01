@@ -12,7 +12,25 @@ import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { getSocket } from "@/lib/socket";
 
-type Summary = { needsHuman: number; emergency: number; humanActive: number; attention: number };
+export type InboxSummary = {
+  needsHuman: number;
+  emergency: number;
+  humanActive: number;
+  unreadChats: number; // chats with staff that have patient messages nobody has opened
+  unreadMessages: number;
+  waitingChats: number; // waiting for a staff member, or with unread messages
+  attention: number;
+};
+
+/** Inbox counts for the header bell, the sidebar badge and the inbox filters (one shared query) */
+export const useInboxSummary = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["inbox", "summary"],
+    queryFn: () => apiFetch<InboxSummary>("/assistant/inbox/summary"),
+    enabled,
+    refetchInterval: 60_000,
+    meta: { silent: true },
+  });
 
 /** Short beep with the Web Audio API (no sound file); emergencies beep three times */
 const beep = (times: number) => {
@@ -41,13 +59,7 @@ export function InboxBell({ inboxHref }: { inboxHref: string }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const allowed = can("inbox:manage");
-  const summary = useQuery({
-    queryKey: ["inbox", "summary"],
-    queryFn: () => apiFetch<Summary>("/assistant/inbox/summary"),
-    enabled: allowed,
-    refetchInterval: 60_000,
-    meta: { silent: true },
-  });
+  const summary = useInboxSummary(allowed);
 
   useEffect(() => {
     if (!allowed) return;
@@ -72,7 +84,7 @@ export function InboxBell({ inboxHref }: { inboxHref: string }) {
     };
   }, [allowed, queryClient, router, inboxHref]);
 
-  const n = summary.data?.attention ?? 0;
+  const n = summary.data?.waitingChats ?? summary.data?.attention ?? 0;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="relative" aria-label={n ? `Notifications: ${n} chats need a staff member` : "Notifications"} />}>
@@ -92,6 +104,9 @@ export function InboxBell({ inboxHref }: { inboxHref: string }) {
           <div className="space-y-2 px-3 py-3 text-sm">
             {summary.data?.emergency ? <p className="font-medium text-status-danger-fg">{summary.data.emergency} emergency chat(s)</p> : null}
             <p>{summary.data?.needsHuman ?? 0} chat(s) need a staff member</p>
+            <p className={summary.data?.unreadMessages ? "font-medium text-heading" : "text-muted-foreground"}>
+              {summary.data?.unreadMessages ?? 0} unread message(s) in {summary.data?.unreadChats ?? 0} chat(s)
+            </p>
             <p className="text-muted-foreground">{summary.data?.humanActive ?? 0} being handled by staff</p>
             <Link href={inboxHref} className="block font-medium text-primary underline">
               Open inbox
