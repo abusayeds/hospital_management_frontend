@@ -70,6 +70,7 @@ export const PERMISSIONS = {
   "report:finance": "Finance reports",
   "report:operations": "Operational reports and live overview",
   "dashboard:read": "Own role dashboard",
+  "dashboard:analytics_export": "Export management analytics as CSV",
   // Patient assistant (hand-offs to staff)
   "inbox:manage": "Staff inbox: read assistant conversations, take over, reply and resolve",
   "knowledge:manage": "Edit and publish the assistant's knowledge base",
@@ -98,6 +99,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "automation:read",
     "automation:manage",
     "report:operations",
+    "dashboard:analytics_export",
     "inbox:manage",
     "knowledge:manage",
   ],
@@ -106,6 +108,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "dashboard:read",
     "report:finance",
     "report:operations",
+    "dashboard:analytics_export",
     "appointment:read",
     "queue:read",
     "bill:read",

@@ -104,6 +104,7 @@ export type HospitalSettings = {
   defaultSlotMinutes: number;
   displayNotice?: string;
   labFourEyes: boolean;
+  dailyCollectionTarget?: number; // poisha; 0 = no target
 };
 
 // Bangladesh week starts on Saturday; Friday is the usual weekly holiday

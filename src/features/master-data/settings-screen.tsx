@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { apiFetch, getErrorMessage } from "@/lib/api";
 import { HospitalSettings } from "@/lib/master-data";
+import { poishaToTaka, takaToPoisha } from "@/lib/money";
 import { FormError } from "./form-bits";
 
 export function SettingsScreen() {
@@ -31,7 +32,8 @@ function SettingsContent() {
   return <SettingsForm initial={settings.data} />;
 }
 
-type Form = Omit<HospitalSettings, "phones" | "bookingWindowDays" | "cancellationCutoffMinutes" | "defaultSlotMinutes"> & {
+type Form = Omit<HospitalSettings, "phones" | "bookingWindowDays" | "cancellationCutoffMinutes" | "defaultSlotMinutes" | "dailyCollectionTarget"> & {
+  dailyCollectionTarget: string;
   phones: string;
   bookingWindowDays: string;
   cancellationCutoffMinutes: string;
@@ -46,6 +48,7 @@ function SettingsForm({ initial }: { initial: HospitalSettings }) {
     bookingWindowDays: String(initial.bookingWindowDays),
     cancellationCutoffMinutes: String(initial.cancellationCutoffMinutes),
     defaultSlotMinutes: String(initial.defaultSlotMinutes),
+    dailyCollectionTarget: initial.dailyCollectionTarget ? String(poishaToTaka(initial.dailyCollectionTarget)) : "",
   });
   const [error, setError] = useState<string>();
 
@@ -69,6 +72,7 @@ function SettingsForm({ initial }: { initial: HospitalSettings }) {
           defaultSlotMinutes: Number(f.defaultSlotMinutes),
           displayNotice: f.displayNotice?.trim() ?? "",
           labFourEyes: f.labFourEyes !== false,
+          dailyCollectionTarget: takaToPoisha(Number(f.dailyCollectionTarget) || 0),
         },
       }),
     meta: { silent: true },
@@ -137,6 +141,11 @@ function SettingsForm({ initial }: { initial: HospitalSettings }) {
         <SectionCard title="Waiting-room TV" bodyClassName="space-y-1.5">
           <Label htmlFor="set-displayNotice">Scrolling notice (bottom of the TV screen)</Label>
           <Textarea id="set-displayNotice" rows={3} value={f.displayNotice ?? ""} onChange={(e) => setF({ ...f, displayNotice: e.target.value })} />
+        </SectionCard>
+
+        <SectionCard title="Management dashboard" bodyClassName="space-y-2">
+          {text("dailyCollectionTarget", "Daily collection target (taka)", { type: "number", min: 0, step: 100, placeholder: "e.g. 250000" })}
+          <p className="text-sm text-muted-foreground">The dashboard shows today&apos;s collection as a percentage of this target. Leave empty for no target.</p>
         </SectionCard>
 
         <SectionCard title="Laboratory" bodyClassName="flex items-start gap-3">

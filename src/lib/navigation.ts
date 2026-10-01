@@ -203,9 +203,9 @@ export const NAVIGATION: Record<Role, NavSection[]> = {
       items: [
         { label: "Live Overview", labelBn: "লাইভ ওভারভিউ", href: "/management/live-overview", icon: Activity, permission: "report:operations" },
         { label: "Automation", labelBn: "অটোমেশন", href: "/management/automation", icon: Workflow, permission: "automation:read", description: "Reminders and messages sent, with delivery status (read-only)." },
-        { label: "Revenue", labelBn: "আয়", href: "/management/revenue", icon: TrendingUp, permission: "report:finance", phase: 7, description: "Revenue by department, doctor and payment method." },
+        { label: "Revenue", labelBn: "আয়", href: "/management/revenue", icon: TrendingUp, permission: "report:finance", description: "Revenue by department, doctor and payment method." },
         { label: "Reports", labelBn: "রিপোর্ট", href: "/management/reports", icon: FileBarChart, permission: "report:operations", phase: 7, description: "Daily, monthly and custom reports with export." },
-        { label: "Doctor Performance", labelBn: "ডাক্তার পারফরম্যান্স", href: "/management/doctors", icon: Stethoscope, permission: "report:operations", phase: 7, description: "Patients seen, waiting time and follow-up rate." },
+        { label: "Doctor Performance", labelBn: "ডাক্তার পারফরম্যান্স", href: "/management/doctors", icon: Stethoscope, permission: "report:operations", description: "Patients seen, waiting time and follow-up rate." },
         { label: "Smart Insights", labelBn: "স্মার্ট ইনসাইট", href: "/management/ai-insights", icon: Sparkles, permission: "report:operations", phase: 7, description: "Automatic trend summaries — suggestions only, humans decide." },
       ],
     },

@@ -1,6 +1,6 @@
 "use client";
 
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 /**
  * Single-series charts in the brand chart color. One series → no legend box;
@@ -162,6 +162,105 @@ export function ColumnChart({
         </ResponsiveContainer>
       </div>
       <DataTableFallback caption={caption} data={data} format={format} />
+    </figure>
+  );
+}
+
+// ---------------------------------------------------------------- multi-series (analytics)
+
+export type Series = { key: string; label: string; color?: string };
+type Row = Record<string, string | number>;
+const SERIES_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
+const colorOf = (s: Series, i: number) => s.color ?? SERIES_COLORS[i % SERIES_COLORS.length];
+
+function MultiTooltip({ active, payload, label, format }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string; format: (v: number) => string }) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border bg-popover px-3 py-2 text-xs shadow-raised">
+      <p className="mb-1 text-muted-foreground">{label}</p>
+      {payload.map((p) => (
+        <p key={p.name} className="flex items-center gap-2">
+          <span className="size-2 rounded-full" style={{ background: p.color }} />
+          <span className="flex-1">{p.name}</span>
+          <span className="font-semibold text-heading tabular-nums">{format(p.value)}</span>
+        </p>
+      ))}
+    </div>
+  );
+}
+
+function MultiTableFallback({ caption, data, series, xKey, format }: { caption: string; data: Row[]; series: Series[]; xKey: string; format: (v: number) => string }) {
+  return (
+    <table className="sr-only">
+      <caption>{caption}</caption>
+      <thead>
+        <tr>
+          <th scope="col">{xKey}</th>
+          {series.map((s) => (
+            <th key={s.key} scope="col">
+              {s.label}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((d) => (
+          <tr key={String(d[xKey])}>
+            <th scope="row">{d[xKey]}</th>
+            {series.map((s) => (
+              <td key={s.key}>{format(Number(d[s.key] ?? 0))}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+const LEGEND = { wrapperStyle: { fontSize: 12, paddingTop: 8 }, iconType: "circle" as const, iconSize: 8 };
+
+/** Several lines over time (e.g. completed / no-show / cancelled per day) */
+export function MultiLineChart({ data, series, caption, xKey = "label", format = String, height = 280 }: { data: Row[]; series: Series[]; caption: string; xKey?: string; format?: (v: number) => string; height?: number }) {
+  return (
+    <figure>
+      <div style={{ height }} aria-hidden>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+            <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+            <XAxis dataKey={xKey} tick={AXIS} tickLine={false} axisLine={false} minTickGap={24} />
+            <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={compact} width={48} allowDecimals={false} />
+            <Tooltip content={<MultiTooltip format={format} />} cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }} />
+            <Legend {...LEGEND} />
+            {series.map((s, i) => (
+              <Line key={s.key} type="monotone" dataKey={s.key} name={s.label} stroke={colorOf(s, i)} strokeWidth={2} dot={false} isAnimationActive={false} />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+      <MultiTableFallback caption={caption} data={data} series={series} xKey={xKey} format={format} />
+    </figure>
+  );
+}
+
+/** Stacked columns (e.g. revenue per day split by consultation / lab / medicine) */
+export function StackedColumnChart({ data, series, caption, xKey = "label", format = String, height = 280 }: { data: Row[]; series: Series[]; caption: string; xKey?: string; format?: (v: number) => string; height?: number }) {
+  return (
+    <figure>
+      <div style={{ height }} aria-hidden>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }} barCategoryGap="18%">
+            <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+            <XAxis dataKey={xKey} tick={AXIS} tickLine={false} axisLine={false} minTickGap={16} />
+            <YAxis tick={AXIS} tickLine={false} axisLine={false} tickFormatter={compact} width={48} />
+            <Tooltip content={<MultiTooltip format={format} />} cursor={{ fill: "var(--muted)" }} />
+            <Legend {...LEGEND} />
+            {series.map((s, i) => (
+              <Bar key={s.key} dataKey={s.key} name={s.label} stackId="a" fill={colorOf(s, i)} maxBarSize={36} isAnimationActive={false} />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <MultiTableFallback caption={caption} data={data} series={series} xKey={xKey} format={format} />
     </figure>
   );
 }
