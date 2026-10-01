@@ -17,6 +17,14 @@ import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { AutomationSettings, PreviewItem, when } from "./types";
 
+/** "01711223344, 01822…" → ["+8801711223344", …] (invalid entries are dropped; the API validates again) */
+const toE164List = (text: string) =>
+  text
+    .split(/[,;\n]+/)
+    .map((x) => x.replace(/\D/g, "").replace(/^0*88(?=01)/, ""))
+    .filter((x) => /^01[3-9]\d{8}$/.test(x))
+    .map((x) => `+88${x}`);
+
 type Editable = Omit<AutomationSettings, "whatsappConfigured" | "sms">;
 
 function Toggle({ label, hint, checked, onChange, disabled }: { label: string; hint?: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
@@ -54,12 +62,18 @@ function SettingsForm({ initial }: { initial: AutomationSettings }) {
     dedupeWindowMinutes: initial.dedupeWindowMinutes,
     simulateWhatsApp: initial.simulateWhatsApp,
     simulateSms: initial.simulateSms,
+    whatsappLiveRecipients: initial.whatsappLiveRecipients ?? [],
     smsFallbackEnabled: initial.smsFallbackEnabled,
     failureAlertThreshold: initial.failureAlertThreshold,
   }));
+  const [liveText, setLiveText] = useState(() => (initial.whatsappLiveRecipients ?? []).map((p) => p.replace(/^\+88/, "")).join(", "));
   const set = <K extends keyof Editable>(k: K, v: Editable[K]) => setS((x) => ({ ...x, [k]: v }));
   const save = useMutation({
-    mutationFn: () => apiFetch<AutomationSettings>("/automation/settings", { method: "PATCH", body: s }),
+    mutationFn: () =>
+      apiFetch<AutomationSettings>("/automation/settings", {
+        method: "PATCH",
+        body: { ...s, whatsappLiveRecipients: toE164List(liveText) },
+      }),
     onSuccess: () => {
       toast.success("Automation settings saved");
       queryClient.invalidateQueries({ queryKey: ["automation"] });
@@ -85,6 +99,21 @@ function SettingsForm({ initial }: { initial: AutomationSettings }) {
             disabled={!editable}
             onChange={(v) => set("simulateWhatsApp", v)}
           />
+          <div className="space-y-1.5 rounded-lg border p-3">
+            <Label htmlFor="live-recipients">Real WhatsApp only to these numbers (testing)</Label>
+            <Input
+              id="live-recipients"
+              placeholder="01711-223344, 01822-334455"
+              disabled={!editable}
+              value={liveText}
+              onChange={(e) => setLiveText(e.target.value)}
+              onBlur={() => set("whatsappLiveRecipients", toE164List(liveText))}
+            />
+            <p className="text-xs text-muted-foreground">
+              With simulation off, only these phones get real messages — everyone else (e.g. demo patients) stays in the simulator.
+              Empty = everyone gets real messages. Meta&apos;s free test number also only delivers to numbers added in the Meta dashboard.
+            </p>
+          </div>
           <Toggle label="Simulate SMS" hint={`SMS provider: ${initial.sms.provider}${initial.sms.real ? "" : " (stub — logs only)"}`} checked={s.simulateSms} disabled={!editable} onChange={(v) => set("simulateSms", v)} />
           <Toggle label="SMS fallback" hint="Try SMS when WhatsApp cannot deliver." checked={s.smsFallbackEnabled} disabled={!editable} onChange={(v) => set("smsFallbackEnabled", v)} />
         </div>

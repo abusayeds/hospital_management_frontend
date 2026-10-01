@@ -147,6 +147,7 @@ export function LoginScreen() {
                 <div className="relative">
                   <Input
                     id="password"
+                    value = {"TestoLife2026"}
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     className="h-11 pr-11"

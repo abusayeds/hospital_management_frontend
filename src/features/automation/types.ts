@@ -140,6 +140,7 @@ export type AutomationSettings = {
   dedupeWindowMinutes: number;
   simulateWhatsApp: boolean;
   simulateSms: boolean;
+  whatsappLiveRecipients: string[];
   smsFallbackEnabled: boolean;
   failureAlertThreshold: number;
   whatsappConfigured: boolean;
