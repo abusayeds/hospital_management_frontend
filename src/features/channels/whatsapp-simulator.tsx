@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 type Payload = {
   type: string;
   text?: { body: string };
+  // Approved template (sent outside the 24-hour window): WhatsApp shows the approved text with the parameters filled in
+  template?: { name: string; components?: { type: string; parameters?: { type: string; payload?: string; text?: string }[] }[] };
   interactive?: {
     type: "button" | "list";
     body: { text: string };
@@ -41,9 +43,27 @@ type SendBody = { text?: string; replyId?: string; title?: string; kind?: "text"
 const clock = (iso: string) => new Date(iso).toLocaleTimeString("en-GB", { timeZone: "Asia/Dhaka", hour: "2-digit", minute: "2-digit" });
 
 /** Renders one Cloud API payload the way WhatsApp would show it */
-function WaPayload({ p, onTap, disabled }: { p: Payload; onTap: (b: SendBody) => void; disabled: boolean }) {
+function WaPayload({ p, text, onTap, disabled }: { p: Payload; text: string; onTap: (b: SendBody) => void; disabled: boolean }) {
   const [listOpen, setListOpen] = useState(false);
   if (p.type === "text") return <p className="whitespace-pre-wrap">{p.text?.body}</p>;
+  if (p.type === "template") {
+    const buttons = (p.template?.components ?? []).filter((c) => c.type === "button").map((c) => c.parameters?.[0]?.payload ?? "");
+    return (
+      <div>
+        <p className="mb-1 text-[10px] font-semibold tracking-wide text-emerald-700 uppercase">Template · {p.template?.name}</p>
+        <p className="whitespace-pre-wrap">{text}</p>
+        {buttons.length > 0 && (
+          <div className="mt-2 -mx-2.5 -mb-1.5 divide-y border-t border-black/10">
+            {buttons.map((id) => (
+              <button key={id} type="button" disabled={disabled} onClick={() => onTap({ replyId: id, title: id.split("|")[1] ?? id, kind: "button" })} className="block w-full py-2 text-center text-sm font-medium text-sky-600 capitalize disabled:opacity-50">
+                {id.split("|")[1]?.replace("_", " ") ?? id}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
   const i = p.interactive!;
   return (
     <div>
@@ -185,7 +205,8 @@ export function WhatsAppSimulator() {
                   (m.payloads.length ? m.payloads : [{ type: "text", text: { body: m.text } } as Payload]).map((p, j) => (
                     <div key={`${m.id}-${j}`} className={cn("max-w-[85%] rounded-lg rounded-tl-none bg-white px-2.5 py-1.5 shadow-sm", m.sender === "staff" && "border-l-4 border-sky-500")}>
                       {m.sender === "staff" && <p className="text-[11px] font-semibold text-sky-700">Hospital staff</p>}
-                      <WaPayload p={p} onTap={(b) => send.mutate(b)} disabled={send.isPending || idx < lastOutbound - 3} />
+                      {m.sender === "automation" && <p className="text-[11px] font-semibold text-emerald-700">Automatic message</p>}
+                      <WaPayload p={p} text={m.text} onTap={(b) => send.mutate(b)} disabled={send.isPending || idx < lastOutbound - 3} />
                       <p className="text-right text-[10px] text-slate-500">
                         {clock(m.createdAt)}
                         {m.deliveryStatus === "failed" && <span className="ml-1 text-red-600">failed: {m.deliveryError}</span>}

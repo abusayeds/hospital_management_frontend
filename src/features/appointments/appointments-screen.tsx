@@ -123,7 +123,17 @@ function AppointmentsContent() {
       ),
     },
     { key: "source", header: "Via", className: "hidden xl:table-cell text-xs", cell: (a) => SOURCE_LABEL[a.source] },
-    { key: "status", header: "Status", cell: (a) => <StatusBadge status={a.status} /> },
+    {
+      key: "status",
+      header: "Status",
+      cell: (a) => (
+        <div className="flex flex-wrap gap-1">
+          <StatusBadge status={a.status} />
+          {a.doctorAbsent && a.status === "booked" && <StatusBadge tone="danger">Doctor absent</StatusBadge>}
+          {a.confirmedByPatient && a.status === "booked" && <StatusBadge tone="success">Confirmed by patient</StatusBadge>}
+        </div>
+      ),
+    },
     {
       key: "actions",
       header: <span className="sr-only">Actions</span>,
@@ -201,7 +211,7 @@ function AppointmentsContent() {
         getRowId={(a) => a.id}
         isLoading={list.isPending}
         searchPlaceholder="Name, code or phone"
-        rowClassName={(a) => (a.status === "in_consultation" ? "bg-status-active-bg/50" : a.status === "cancelled" || a.status === "no_show" ? "opacity-60" : undefined)}
+        rowClassName={(a) => (a.doctorAbsent && a.status === "booked" ? "bg-status-danger-bg/60" : a.status === "in_consultation" ? "bg-status-active-bg/50" : a.status === "cancelled" || a.status === "no_show" ? "opacity-60" : undefined)}
         server={{
           query: q,
           onQueryChange: (v) => {

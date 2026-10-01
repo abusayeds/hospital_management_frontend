@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/auth";
+import { AutomationAlerts } from "@/features/automation/automation-alerts";
 import { InboxBell } from "@/features/inbox/inbox-bell";
 import { useLabel } from "@/lib/language";
 import { findNavItem, Role } from "@/lib/navigation";
@@ -54,6 +55,8 @@ export function AppHeader({ role, onMenuClick }: { role: Role; onMenuClick?: () 
 
       <SystemStatus className="hidden md:inline-flex" />
       <LanguageToggle className="hidden sm:inline-flex" />
+
+      <AutomationAlerts />
 
       <InboxBell inboxHref={role === "super_admin" ? "/admin/inbox" : "/reception/inbox"} />
 

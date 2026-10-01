@@ -32,13 +32,17 @@ const EVENT_NAMES = [
   "lab.order_created",
   "lab.sample_collected",
   "lab.report_ready",
+  "doctor.leave_added",
+  "chat.message_received",
+  "chat.booking_created",
+  "chat.handover_requested",
 ];
 
 const TONE = { pending: "waiting", done: "success", failed: "danger" } as const;
 
 /**
- * Read-only log of business events (ids only, no patient details). Phase 6 automation
- * (reminders, follow-ups, report-ready messages) consumes these; failed consumers show here.
+ * Read-only log of business events (ids only, no patient details). Automation rules
+ * (consumers named automation:<rule>) react to these; failed consumers show here.
  */
 export function EventLogScreen() {
   const [name, setName] = useState("");

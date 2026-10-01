@@ -189,7 +189,7 @@ export const NAVIGATION: Record<Role, NavSection[]> = {
       title: "System",
       titleBn: "সিস্টেম",
       items: [
-        { label: "Automation Settings", labelBn: "অটোমেশন সেটিংস", href: "/admin/automation", icon: Workflow, permission: "automation:manage", phase: 6, description: "Reminder and follow-up rules, message templates." },
+        { label: "Automation", labelBn: "অটোমেশন", href: "/admin/automation", icon: Workflow, permission: "automation:read", description: "Reminder and follow-up rules, templates, outbox and run log." },
         { label: "Hospital Settings", labelBn: "হাসপাতাল সেটিংস", href: "/admin/settings", icon: Settings, permission: "settings:manage", description: "Hospital profile, OPD hours, booking rules and TV notice." },
         { label: "Channels", labelBn: "চ্যানেল", href: "/admin/channels", icon: Radio, permission: "settings:manage", description: "Web chat widget and WhatsApp connection." },
         { label: "WhatsApp Simulator", labelBn: "হোয়াটসঅ্যাপ সিমুলেটর", href: "/admin/whatsapp-simulator", icon: Smartphone, permission: "settings:manage", description: "Test the WhatsApp assistant without Meta." },
@@ -204,6 +204,7 @@ export const NAVIGATION: Record<Role, NavSection[]> = {
       titleBn: "বিশ্লেষণ",
       items: [
         { label: "Live Overview", labelBn: "লাইভ ওভারভিউ", href: "/management/live-overview", icon: Activity, permission: "report:operations" },
+        { label: "Automation", labelBn: "অটোমেশন", href: "/management/automation", icon: Workflow, permission: "automation:read", description: "Reminders and messages sent, with delivery status (read-only)." },
         { label: "Revenue", labelBn: "আয়", href: "/management/revenue", icon: TrendingUp, permission: "report:finance", phase: 7, description: "Revenue by department, doctor and payment method." },
         { label: "Reports", labelBn: "রিপোর্ট", href: "/management/reports", icon: FileBarChart, permission: "report:operations", phase: 7, description: "Daily, monthly and custom reports with export." },
         { label: "Doctor Performance", labelBn: "ডাক্তার পারফরম্যান্স", href: "/management/doctors", icon: Stethoscope, permission: "report:operations", phase: 7, description: "Patients seen, waiting time and follow-up rate." },

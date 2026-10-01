@@ -25,6 +25,8 @@ export type AppointmentView = {
   cancelReason?: string | null;
   rescheduledFrom?: string | null;
   rescheduledTo?: string | null;
+  confirmedByPatient?: boolean; // tapped Confirm on a WhatsApp reminder
+  doctorAbsent?: boolean; // the doctor took leave after this booking — call the patient
   statusHistory: { status: AppointmentStatus; at: string; note?: string }[];
   patient: { id: string; name: string; nameBn?: string; patientCode: string; phone: string; gender: string; age: number; hasAllergies: boolean };
   doctor: { id: string; displayName: string; nameBn?: string; roomNo?: string };
