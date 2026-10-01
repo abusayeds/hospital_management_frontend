@@ -241,6 +241,7 @@ export const CONFIG_LABELS: Record<string, { label: string; hint?: string }> = {
   directionsUrl: { label: "Directions link (optional)" },
   queueLink: { label: "Live queue link (optional)" },
   onCallPhones: { label: "On-call WhatsApp numbers (comma separated)", hint: "+8801XXXXXXXXX" },
+  recipientPhones: { label: "Also send the daily report to WhatsApp (comma separated, max 5)", hint: "Management phones, +8801XXXXXXXXX — the message holds no patient data" },
   dailyLimit: { label: "Max sends per day for this rule" },
   quietHoursOverride: { label: "Urgent messages may send during quiet hours" },
 };
