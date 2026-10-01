@@ -26,6 +26,8 @@ type TimelineItem =
 
 export type PatientMessagesData = { preferences: Preferences; items: TimelineItem[]; includesChats: boolean };
 
+const CHANNEL_LABEL: Record<string, string> = { whatsapp: "WhatsApp", sms: "SMS", web: "Web chat", inapp: "In-app" };
+
 const SOURCE_LABEL: Record<string, string> = {
   automation: "Automatic",
   chatbot: "Assistant",
@@ -68,7 +70,7 @@ export function PatientMessages({ patientId, preferences }: { patientId: string;
                   <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                     <span className="tabular-nums">{when(m.createdAt)}</span>
                     {m.channel === "sms" ? <Smartphone className="size-3.5" /> : <MessageCircle className="size-3.5" />}
-                    <span className="capitalize">{m.channel}</span>
+                    <span>{CHANNEL_LABEL[m.channel] ?? m.channel}</span>
                     {m.kind === "outbox" ? (
                       <>
                         <span>· {SOURCE_LABEL[m.source] ?? m.source}</span>

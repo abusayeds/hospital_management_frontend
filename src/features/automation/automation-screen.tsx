@@ -30,7 +30,7 @@ function HealthStrip() {
             : "Simulation mode: WhatsApp messages go to the simulator (Admin → WhatsApp Simulator), not to real phones."}
         </div>
       )}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StatCard
           label="Scheduler"
           value={schedulerOk ? "Running" : h.scheduler.running ? "Behind" : "Stopped"}
@@ -72,7 +72,7 @@ export function AutomationScreen() {
         />
         <HealthStrip />
         <Tabs defaultValue="rules">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden [scrollbar-width:none]">
             <TabsList>
               <TabsTrigger value="rules">
                 <ListChecks className="size-4" /> Rules
