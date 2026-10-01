@@ -20,6 +20,7 @@ import { ROLES } from "@/lib/navigation";
 import { NewPatientForm } from "./new-patient-form";
 import { PatientAppointments } from "./patient-appointments";
 import { PatientMessages } from "./patient-messages";
+import { PatientPreferences } from "./patient-preferences";
 
 export function PatientProfile({ id }: { id: string }) {
   return (
@@ -167,7 +168,7 @@ function ProfileContent({ id }: { id: string }) {
           <NextPhase icon={FlaskConical} title="Lab orders and results" phase={4} />
         </TabsContent>
         <TabsContent value="messages" className="pt-3">
-          <PatientMessages patientId={p.id} />
+          <PatientMessages patientId={p.id} preferences={<PatientPreferences patient={p} />} />
         </TabsContent>
         <TabsContent value="bills" className="pt-3">
           <NextPhase icon={Receipt} title="Invoices and payments" phase={7} />

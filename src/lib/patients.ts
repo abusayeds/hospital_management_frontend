@@ -25,6 +25,16 @@ export type Patient = {
   nidMasked: string | null;
   registrationSource: "reception" | "chatbot" | "whatsapp" | "phone";
   lastVisitDate: string | null;
+  preferences?: {
+    reminders: boolean;
+    followUps: boolean;
+    labReports: boolean;
+    marketing: boolean;
+    language: "bn" | "en";
+    optOutAll: boolean;
+    optOutAt?: string | null;
+    optOutReason?: string | null;
+  };
   createdAt: string;
 };
 
