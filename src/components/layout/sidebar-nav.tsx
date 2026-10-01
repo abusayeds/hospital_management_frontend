@@ -70,7 +70,7 @@ export function SidebarNav({ role, collapsed = false, onToggleCollapsed, onNavig
                 {t({ label: "Displays & tools", labelBn: "ডিসপ্লে ও টুলস" })}
               </p>
             )}
-            {SHARED_LINKS.map((item) => (
+            {SHARED_LINKS.filter((item) => !item.roles || item.roles.includes(role)).map((item) => (
               <NavLink
                 key={item.href}
                 item={item}

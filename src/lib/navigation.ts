@@ -147,6 +147,8 @@ export type NavItem = {
   permission?: Permission;
   // Phase in which this page is built; undefined = already available
   phase?: number;
+  // Shared links only: the roles that see it (undefined = every staff role)
+  roles?: Role[];
 };
 
 export type NavSection = { title?: string; titleBn?: string; items: NavItem[] };
@@ -292,7 +294,8 @@ export const NAVIGATION: Record<Role, NavSection[]> = {
 // Links every staff member may open (they live outside the role areas)
 export const SHARED_LINKS: NavItem[] = [
   { label: "Queue Display (TV)", labelBn: "সিরিয়াল ডিসপ্লে", href: "/queue-display", icon: ListOrdered },
-  { label: "Patient Assistant", labelBn: "রোগীর সহকারী", href: "/chat", icon: Bot },
+  // Only the roles that answer or manage patient chats (and management, for oversight)
+  { label: "Patient Assistant", labelBn: "রোগীর সহকারী", href: "/chat", icon: Bot, roles: ["super_admin", "reception", "management"] },
   { label: "Design System", labelBn: "ডিজাইন সিস্টেম", href: "/design-system", icon: Sparkles },
 ];
 
