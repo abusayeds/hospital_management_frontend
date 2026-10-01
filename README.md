@@ -95,7 +95,7 @@ AppShell → /auth/me → role area check (403 page) → forced password change 
 
 | Role | Route | Screen (`src/features/…`) |
 | --- | --- | --- |
-| Admin | `/admin/users`, `/roles`, `/audit-logs`, `/events`, `/inbox`, `/knowledge`, **`/automation`**, `/channels`, `/whatsapp-simulator`, `/departments`, `/doctors`, `/services`, `/lab-tests`, `/medicines`, `/settings`, `/system-health` | `users/`, `audit/`, `events/`, `inbox/`, `knowledge/`, `automation/`, `channels/`, `master-data/` |
+| Admin | `/admin/users`, `/roles`, `/audit-logs`, `/events`, `/inbox`, `/knowledge`, **`/automation`**, `/channels`, `/departments`, `/doctors`, `/services`, `/lab-tests`, `/medicines`, `/settings`, `/system-health` | `users/`, `audit/`, `events/`, `inbox/`, `knowledge/`, `automation/`, `channels/`, `master-data/` |
 | Reception | `/reception/register`, `/patients`, `/appointments`, `/queue`, `/lab-reports`, **`/inbox`** (old `/ai-alerts` redirects here) | `patients/`, `appointments/`, `queue/`, `lab/lab-lists.tsx`, `inbox/` |
 | Doctor | `/doctor` (today's numbers + queue + today's visits), `/doctor/queue`, **`/doctor/visit/[appointmentId]`**, **`/doctor/patients`**, **`/doctor/patients/[id]`**, **`/doctor/lab-orders`** | `queue/doctor-queue.tsx`, `visits/`, `lab/` |
 | Nurse | `/nurse` (vitals worklist) | `vitals/` |
@@ -143,14 +143,12 @@ AppShell → /auth/me → role area check (403 page) → forced password change 
 - **Knowledge Base** (`knowledge/knowledge-screen.tsx`): server-side table, bilingual editor with markdown
   preview, publish/unpublish, version history, re-index, and **Test the assistant** (passages + scores + answer).
 - **Channels** (`channels/channels-screen.tsx`): web widget snippet, WhatsApp status and webhook URL (copy), test
-  message, development verification codes (hidden in production). **WhatsApp simulator**
-  (`channels/whatsapp-simulator.tsx`): phone-shaped UI drawing the real Cloud API payloads (buttons, lists), sample
-  messages, image test, reset; works without a Meta account.
+  message, development verification codes (hidden in production).
 
 ### Automation screens (Phase 6) — how they work
 - **Automation** (`automation/automation-screen.tsx`, `/admin/automation` and read-only `/management/automation`,
   permission `automation:read`; editing needs `automation:manage`): health strip (scheduler, due next hour, failures,
-  WhatsApp live/simulated + a simulation banner) and six tabs:
+  WhatsApp live / not configured, with a red banner when paused or not configured) and six tabs:
   - **Rules** (`rules-tab.tsx`): a card per rule — enable switch, trigger, category, next send, last run, 24 h counts;
     "Run now"; side panel with timings (labels in `types.ts → CONFIG_LABELS`), channel order, template, daily limit,
     quiet-hours override and **Test send to me**.
@@ -161,7 +159,7 @@ AppShell → /auth/me → role area check (403 page) → forced password change 
     Duplicate as test.
   - **Scheduled** (`queue-tab.tsx`): due jobs grouped by hour and rule; open one, cancel it (confirm dialog).
   - **Run log** (`runs-tab.tsx`): planner/event/dispatch runs; open a run to see failed sends around it.
-  - **Settings** (`settings-tab.tsx`): pause, simulation per channel, SMS fallback, quiet hours, numerals, budget,
+  - **Settings** (`settings-tab.tsx`): pause, SMS fallback, quiet hours, numerals, budget,
     per-phone cap, duplicate window, failure threshold, opt-out explanation; **Preview world** (dry run up to +23 h).
 - **Header alerts** (`automation/automation-alerts.tsx`): toasts for `automation:alert` (digest, failure alerts);
   waiting-chat and emergency alerts stay with the inbox bell.
@@ -169,9 +167,8 @@ AppShell → /auth/me → role area check (403 page) → forced password change 
   patient's phone (and their replies for inbox staff) with status chips; preference switches (reminders, follow-ups,
   lab reports, promotions, language, stop all) for `patient:update`.
 - **Appointments list**: "Doctor absent" (red row) and "Confirmed by patient" chips.
-- **WhatsApp simulator**: shows approved-template messages (label + quick-reply buttons) and "Automatic message".
-  Demo: open it with **01711000001** (seeded patient Rahim Uddin) to see the reminders and reply Confirm / Cancel /
-  STOP.
+- **Testing:** register yourself in Reception with your own WhatsApp number, book, and the messages arrive on your
+  phone (with Meta's test number your number must be in its recipient list). There is no simulator.
 
 ## 7. Recipes
 
@@ -196,7 +193,7 @@ default message is not good enough).
 | No live updates | `NEXT_PUBLIC_API_URL` must point at the backend (sockets bypass the rewrite) |
 | Print prescription/report shows a 503 message | Backend needs `npm run pdf:setup` |
 | AI summary card says "not configured" | Backend AI key missing (see backend guide §4) |
-| Automation page shows "Simulated" | Correct for development — real WhatsApp needs Meta credentials and switching simulation off (backend guide §15.7) |
+| Automation page says WhatsApp "Not configured" | Set the four `WHATSAPP_*` values in backend/.env and restart the backend (backend guide §15.7) |
 | Chat says "Sorry, I can't answer right now" | Backend AI key missing or daily budget reached (backend guide §19) |
 | Web chat verification code never arrives | SMS is not built — in development see Admin → Channels → development codes |
 | Staff reply does not appear in the patient's web chat | `NEXT_PUBLIC_API_URL` must point at the backend (socket); the visitor's first message creates the cookie |
