@@ -114,12 +114,14 @@ function RuleEditor({ rule, templates, onClose }: { rule: Rule; templates: Templ
   });
   const test = useMutation({
     mutationFn: () =>
-      apiFetch<{ outbox: { status: string; channel: string; simulated: boolean } }>(`/automation/rules/${rule.key}/test`, {
+      apiFetch<{ outbox: { status: string; channel: string; error: string | null } }>(`/automation/rules/${rule.key}/test`, {
         method: "POST",
         body: { phone, language: lang },
       }),
     onSuccess: (r) =>
-      toast.success(`Test ${r.outbox.status} via ${r.outbox.channel}${r.outbox.simulated ? " (simulated — see the WhatsApp simulator)" : ""}`),
+      r.outbox.status === "failed"
+        ? toast.error(`Test not delivered: ${r.outbox.error ?? "unknown error"}`)
+        : toast.success(`Test sent via ${r.outbox.channel} — check the phone`),
   });
   const fieldError = (k: string) =>
     save.error instanceof ApiError ? save.error.fieldErrors.find((f) => f.path.endsWith(`.${k}`))?.message : undefined;
@@ -223,7 +225,7 @@ function RuleEditor({ rule, templates, onClose }: { rule: Rule; templates: Templ
       {!isStaff && (
         <section className="space-y-3 rounded-lg border border-dashed p-4">
           <h3 className="text-sm font-semibold text-heading">Test send to me</h3>
-          <p className="text-xs text-muted-foreground">Sends the template with sample data, marked [TEST]. In simulation mode it appears in the WhatsApp simulator.</p>
+          <p className="text-xs text-muted-foreground">Sends the template with sample data, marked [TEST], to a real WhatsApp number.</p>
           <div className="flex flex-wrap gap-2">
             <Input className="min-w-40 flex-1" placeholder="01XXXXXXXXX" value={phone} onChange={(e) => setPhone(e.target.value)} aria-label="Your phone" />
             <NativeSelect className="w-28" value={lang} onChange={(e) => setLang(e.target.value as "bn" | "en")} aria-label="Language">

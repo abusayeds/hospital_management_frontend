@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Copy, Globe, KeyRound, Loader2, MessageCircle, Send, Smartphone } from "lucide-react";
+import { Check, Copy, Globe, KeyRound, Loader2, MessageCircle, Send } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -126,7 +126,7 @@ export function ChannelsScreen() {
                 {!c.whatsapp.configured && (
                   <p className="rounded-lg bg-muted px-3 py-2">
                     Set <code>WHATSAPP_PHONE_NUMBER_ID</code>, <code>WHATSAPP_ACCESS_TOKEN</code>, <code>WHATSAPP_VERIFY_TOKEN</code> and{" "}
-                    <code>WHATSAPP_APP_SECRET</code> in backend/.env (see the backend guide). The simulator works without them.
+                    <code>WHATSAPP_APP_SECRET</code> in backend/.env (see the backend guide), then restart the backend.
                   </p>
                 )}
                 <CopyField label="Webhook URL (Meta → WhatsApp → Configuration)" value={c.whatsapp.webhookUrl} />
@@ -150,9 +150,6 @@ export function ChannelsScreen() {
                     </Button>
                   </form>
                 )}
-                <Button variant="outline" render={<Link href="/admin/whatsapp-simulator" />} nativeButton={false}>
-                  <Smartphone /> Open the WhatsApp simulator
-                </Button>
               </div>
             </SectionCard>
           </div>

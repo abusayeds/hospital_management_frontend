@@ -48,7 +48,6 @@ type ListItem = {
   unreadCount: number;
   handoverReason: string | null;
   assignedTo: { id: string; name: string } | null;
-  simulated: boolean;
 };
 type Msg = {
   id: string;
@@ -219,7 +218,6 @@ function ContextPane({ d, onChanged }: { d: Detail; onChanged: () => void }) {
         <p className="flex items-center gap-1.5">
           {c.channel === "whatsapp" ? <MessageCircle className="size-4" /> : <Globe className="size-4" />}
           {c.channel === "whatsapp" ? "WhatsApp" : "Web chat"}
-          {c.simulated && <StatusBadge tone="neutral">simulator</StatusBadge>}
         </p>
         <p>
           {c.phone ?? "No phone yet"}{" "}

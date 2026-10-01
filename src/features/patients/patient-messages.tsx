@@ -76,7 +76,6 @@ export function PatientMessages({ patientId, preferences }: { patientId: string;
                         <span>· {SOURCE_LABEL[m.source] ?? m.source}</span>
                         {m.ruleKey && <span className="font-mono">· {m.ruleKey}</span>}
                         <StatusBadge tone={OUTBOX_TONE[m.status]}>{m.status}</StatusBadge>
-                        {m.simulated && <StatusBadge tone="waiting">simulated</StatusBadge>}
                         {m.replyAction && <StatusBadge tone="success">replied: {m.replyAction}</StatusBadge>}
                       </>
                     ) : (

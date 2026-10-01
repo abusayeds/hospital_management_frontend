@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, CalendarClock, FlaskConical, History, Inbox, ListChecks, MessageSquareText, PauseCircle, Settings2, Workflow } from "lucide-react";
+import { AlertTriangle, CalendarClock, History, Inbox, ListChecks, MessageSquareText, PauseCircle, Settings2, Workflow } from "lucide-react";
 import { RequirePermission } from "@/components/shared/forbidden";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -22,12 +22,14 @@ function HealthStrip() {
   const schedulerOk = h.scheduler.running && h.overdue === 0;
   return (
     <div className="space-y-3">
-      {(h.paused || h.simulation.whatsapp) && (
-        <div className={`flex flex-wrap items-center gap-2 rounded-xl border px-4 py-3 text-sm ${h.paused ? "border-destructive/40 bg-destructive/5 text-destructive" : "border-status-waiting-border bg-status-waiting-bg text-status-waiting-fg"}`}>
-          {h.paused ? <PauseCircle className="size-4" /> : <FlaskConical className="size-4" />}
-          {h.paused
-            ? "Automation is paused — nothing is planned or sent."
-            : "Simulation mode: WhatsApp messages go to the simulator (Admin → WhatsApp Simulator), not to real phones."}
+      {h.paused && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <PauseCircle className="size-4" /> Automation is paused — nothing is planned or sent.
+        </div>
+      )}
+      {!h.whatsappConfigured && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <AlertTriangle className="size-4" /> WhatsApp is not configured — set the WHATSAPP_* values in backend/.env and restart.
         </div>
       )}
       <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
@@ -48,10 +50,10 @@ function HealthStrip() {
         />
         <StatCard
           label="WhatsApp"
-          value={h.simulation.whatsapp ? "Simulated" : h.whatsappConfigured ? "Live" : "Not configured"}
+          value={h.whatsappConfigured ? "Live" : "Not configured"}
           icon={MessageSquareText}
-          tone={!h.simulation.whatsapp && !h.whatsappConfigured ? "danger" : "default"}
-          hint={h.simulation.sms ? "SMS simulated" : "SMS via provider"}
+          tone={h.whatsappConfigured ? "default" : "danger"}
+          hint={h.sms.connected ? `SMS fallback via ${h.sms.provider}` : "No SMS gateway connected"}
         />
       </div>
     </div>

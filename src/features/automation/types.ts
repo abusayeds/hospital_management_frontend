@@ -80,7 +80,6 @@ export type OutboxRow = {
   language: "bn" | "en";
   text: string;
   buttons: string[];
-  simulated: boolean;
   error: string | null;
   deliveryUpdates: { status: string; at: string; error?: string | null }[];
   related: { type: string; id: string } | null;
@@ -138,19 +137,16 @@ export type AutomationSettings = {
   automationDailyBudget: number;
   perPhoneDailyCap: number;
   dedupeWindowMinutes: number;
-  simulateWhatsApp: boolean;
-  simulateSms: boolean;
-  whatsappLiveRecipients: string[];
   smsFallbackEnabled: boolean;
   failureAlertThreshold: number;
   whatsappConfigured: boolean;
-  sms: { provider: string; real: boolean };
+  sms: { provider: string; connected: boolean };
 };
 
 export type Health = {
   scheduler: { running: boolean; startedAt: string | null; lastTickAt: string | null; workerId: string };
   paused: boolean;
-  simulation: { whatsapp: boolean; sms: boolean };
+  sms: { provider: string; connected: boolean; fallbackEnabled: boolean };
   whatsappConfigured: boolean;
   failedLastHour: number;
   failureAlertThreshold: number;

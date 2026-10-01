@@ -79,7 +79,6 @@ function OutboxDetail({ id, onClose }: { id: string; onClose: () => void }) {
         <StatusBadge tone="neutral">{o.channel}</StatusBadge>
         <StatusBadge tone="neutral">{o.messageKind === "template" ? `template ${o.whatsappTemplateName}` : o.messageKind}</StatusBadge>
         <StatusBadge tone="info">{SOURCE_LABEL[o.source]}</StatusBadge>
-        {o.simulated && <StatusBadge tone="waiting">Simulated</StatusBadge>}
         {o.replyAction && <StatusBadge tone="success">Patient replied: {o.replyAction}</StatusBadge>}
       </div>
       <dl className="grid grid-cols-2 gap-3 text-sm">
@@ -220,7 +219,6 @@ export function OutboxTab() {
       cell: (o) => (
         <div className="flex flex-wrap gap-1">
           <StatusBadge tone={OUTBOX_TONE[o.status]}>{o.status}</StatusBadge>
-          {o.simulated && <StatusBadge tone="waiting">sim</StatusBadge>}
         </div>
       ),
     },
