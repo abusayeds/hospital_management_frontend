@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, Check, Copy, Droplet, FlaskConical, HeartPulse, Pencil, Phone, Printer, Receipt, Stethoscope } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, Copy, Droplet, FlaskConical, HeartPulse, Pencil, Phone, Printer, Stethoscope } from "lucide-react";
 import Link from "next/link";
 import { ReactNode, useState } from "react";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -17,6 +17,7 @@ import { useAuth } from "@/lib/auth";
 import { initials } from "@/lib/master-data";
 import { ageGender, formatDate, formatPhone, Patient } from "@/lib/patients";
 import { ROLES } from "@/lib/navigation";
+import { PatientBills } from "../billing/patient-bills";
 import { NewPatientForm } from "./new-patient-form";
 import { PatientAppointments } from "./patient-appointments";
 import { PatientMessages } from "./patient-messages";
@@ -171,7 +172,7 @@ function ProfileContent({ id }: { id: string }) {
           <PatientMessages patientId={p.id} preferences={<PatientPreferences patient={p} />} />
         </TabsContent>
         <TabsContent value="bills" className="pt-3">
-          <NextPhase icon={Receipt} title="Invoices and payments" phase={7} />
+          <PatientBills patientId={p.id} />
         </TabsContent>
       </Tabs>
 
