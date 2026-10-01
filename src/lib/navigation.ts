@@ -296,7 +296,8 @@ export const SHARED_LINKS: NavItem[] = [
   { label: "Queue Display (TV)", labelBn: "সিরিয়াল ডিসপ্লে", href: "/queue-display", icon: ListOrdered },
   // Only the roles that answer or manage patient chats (and management, for oversight)
   { label: "Patient Assistant", labelBn: "রোগীর সহকারী", href: "/chat", icon: Bot, roles: ["super_admin", "reception", "management"] },
-  { label: "Design System", labelBn: "ডিজাইন সিস্টেম", href: "/design-system", icon: Sparkles },
+  // UI reference for developers — admins only
+  { label: "Design System", labelBn: "ডিজাইন সিস্টেম", href: "/design-system", icon: Sparkles, roles: ["super_admin"] },
 ];
 
 /** Which role area a URL belongs to, e.g. "/reception/queue" → "reception" */
