@@ -74,7 +74,7 @@ function Bubble({ msg, lang, onTap, answered, onRetry }: { msg: ChatMessage; lan
 
 /**
  * Public patient chat (/chat and the embeddable widget). No login: the browser gets an anonymous
- * cookie from the API; personal actions need a one-time code sent to the patient's phone.
+ * cookie from the API; booking needs only the patient's mobile number, name, age and gender (no code).
  * Staff replies arrive live over the socket. Never says "AI" (patient-facing screen).
  */
 export function ChatWindow({ embed = false }: { embed?: boolean }) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Copy, Globe, KeyRound, Loader2, MessageCircle, Send } from "lucide-react";
+import { Check, Copy, Globe, Loader2, MessageCircle, Send } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ApiError, apiFetch } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 type Channels = {
   web: { enabled: boolean; lastMessageAt: string | null; widgetScript: string };
@@ -44,41 +44,6 @@ function CopyField({ label, value }: { label: string; value: string }) {
         </Button>
       </div>
     </div>
-  );
-}
-
-function DevOtps() {
-  const otps = useQuery({
-    queryKey: ["dev-otps"],
-    queryFn: () => apiFetch<{ phone: string; code: string; expiresAt: string; attempts: number }[]>("/assistant/admin/dev-otps"),
-    refetchInterval: 5000,
-    retry: false,
-    meta: { silent: true },
-  });
-  if (otps.error instanceof ApiError && otps.error.status === 404) return null; // production
-  return (
-    <SectionCard
-      title={
-        <span className="flex items-center gap-2">
-          <KeyRound className="size-4" /> Development verification codes
-        </span>
-      }
-      description="SMS is not connected yet. In development the web chat's one-time codes appear here (never in production)."
-    >
-      {!otps.data?.length ? (
-        <p className="text-sm text-muted-foreground">No active codes.</p>
-      ) : (
-        <ul className="divide-y rounded-lg border">
-          {otps.data.map((o, i) => (
-            <li key={i} className="flex items-center justify-between px-3 py-2 text-sm">
-              <span>{o.phone}</span>
-              <span className="font-mono text-lg font-bold tracking-widest">{o.code}</span>
-              <span className="text-xs text-muted-foreground">expires {when(o.expiresAt)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </SectionCard>
   );
 }
 
@@ -154,7 +119,6 @@ export function ChannelsScreen() {
             </SectionCard>
           </div>
         )}
-        <DevOtps />
       </div>
     </RequirePermission>
   );
