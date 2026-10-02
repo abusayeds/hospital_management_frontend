@@ -9,7 +9,6 @@ import { ReactNode, useEffect, useState, useSyncExternalStore } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LanguageToggle } from "@/components/layout/language-toggle";
-import { RoleBadge } from "@/components/layout/role-badge";
 import { BrandLogo, BrandMark } from "@/components/shared/brand-logo";
 import { SystemStatus } from "@/components/shared/system-status";
 import { Button } from "@/components/ui/button";
@@ -19,15 +18,13 @@ import { ApiError, apiFetch, getErrorMessage } from "@/lib/api";
 import type { CurrentUser } from "@/lib/auth";
 import { ROLES } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-import { DEMO_ACCOUNTS } from "./demo-accounts";
+import { DEMO_PASSWORD, EmailWithDemoAccounts } from "./demo-account-email";
 
 const loginSchema = z.object({
   email: z.string().trim().min(1, "Enter your email").email("Enter a valid email address"),
   password: z.string().min(1, "Enter your password"),
 });
 type LoginValues = z.infer<typeof loginSchema>;
-
-const SHOW_DEMO_ACCOUNTS = process.env.NODE_ENV === "development";
 
 // Why the user was sent to the login page (set by lib/api.ts and the idle timer)
 const REASONS: Record<string, { text: string; textBn: string; tone: "info" | "warning" }> = {
@@ -125,7 +122,7 @@ export function LoginScreen() {
                 <Label htmlFor="email">
                   Email <span className="font-bangla font-normal text-muted-foreground">· ইমেইল</span>
                 </Label>
-                <Input
+                <EmailWithDemoAccounts
                   id="email"
                   type="email"
                   autoComplete="username"
@@ -133,6 +130,12 @@ export function LoginScreen() {
                   aria-invalid={Boolean(formState.errors.email)}
                   aria-describedby={formState.errors.email ? "email-error" : undefined}
                   {...register("email")}
+                  onPick={(a) => {
+                    setValue("email", a.email, { shouldValidate: true });
+                    // Dev password from .env (or empty, clearing anything the browser autofilled)
+                    setValue("password", DEMO_PASSWORD, { shouldValidate: Boolean(DEMO_PASSWORD) });
+                    setFocus(DEMO_PASSWORD ? "email" : "password");
+                  }}
                 />
                 {formState.errors.email && (
                   <p id="email-error" className="text-xs text-destructive">
@@ -148,7 +151,6 @@ export function LoginScreen() {
                 <div className="relative">
                   <Input
                     id="password"
-                    value = {"TestoLife2026"}
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     className="h-11 pr-11"
@@ -190,34 +192,6 @@ export function LoginScreen() {
               Patient? Sign in with your phone · রোগী? ফোন নম্বর দিয়ে প্রবেশ করুন
             </Link>
           </div>
-
-          {SHOW_DEMO_ACCOUNTS && (
-            <div className="rounded-2xl border border-dashed bg-card/60 p-5">
-              <p className="text-sm font-semibold text-heading">Demo accounts · development only</p>
-              <p className="mb-3 text-xs text-muted-foreground">
-                Click to fill the email, then type the password (<code className="rounded bg-muted px-1">DEMO_PASSWORD</code> in backend/.env, case-sensitive).
-                Hidden in production builds.
-              </p>
-              <div className="grid grid-cols-1 gap-1.5">
-                {DEMO_ACCOUNTS.map((a) => (
-                  <button
-                    key={a.email}
-                    type="button"
-                    onClick={() => {
-                      setValue("email", a.email, { shouldValidate: true });
-                      // Clear anything the browser autofilled (e.g. a personal saved password)
-                      setValue("password", "");
-                      setFocus("password");
-                    }}
-                    className="flex min-h-11 items-center justify-between gap-2 rounded-lg border bg-card px-3 py-1.5 text-left text-xs transition-colors hover:border-primary"
-                  >
-                    <span className="truncate text-muted-foreground">{a.email}</span>
-                    <RoleBadge role={a.role} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="flex justify-center">
