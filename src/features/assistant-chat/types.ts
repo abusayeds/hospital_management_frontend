@@ -3,6 +3,7 @@
 export type ReplyOption = { id: string; label: string; description?: string; meta?: Record<string, unknown> };
 
 export type CardKind =
+  | "doctor_day"
   | "booking_summary"
   | "booking_success"
   | "cancel_summary"

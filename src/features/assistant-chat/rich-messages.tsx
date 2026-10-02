@@ -196,7 +196,8 @@ export function CardMessage({ m, lang, onTap, disabled }: Props<Extract<RichMess
       </div>
     );
   }
-  const isSummary = m.kind === "booking_summary" || m.kind === "cancel_summary" || m.kind === "reschedule_summary";
+  // Cards the patient answers with a button: summaries (Confirm / Change) and a doctor's day (Book / another day)
+  const isSummary = m.kind === "booking_summary" || m.kind === "cancel_summary" || m.kind === "reschedule_summary" || m.kind === "doctor_day";
   return (
     <div className={cn("space-y-3 rounded-2xl border bg-card p-4", m.kind === "cancel_summary" && "border-status-waiting-border")}>
       <p className="flex items-center gap-2 font-semibold text-heading">
