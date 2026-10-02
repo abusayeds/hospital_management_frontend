@@ -46,7 +46,7 @@ AppShell → /auth/me → role area check (403 page) → forced password change 
 | `src/app/patient/` | Mobile-first patient area (`PatientShell`, bottom tabs) — Phase 5 |
 | `src/app/print/*` | Print pages (patient card, token) |
 | `src/app/verify/[code]` | **Public** page a QR code opens (genuine / not genuine) |
-| `src/app/queue-display` | Waiting-room TV (`?key=` display key) |
+| `src/app/queue-display` | Public queue board (TV and phones, no key) |
 | `src/app/chat` | **Public** patient chat (Testo Life Assistant); `?embed=1` = compact layout for the widget iframe |
 | `public/widget.js` | One-line website widget: floating button + iframe of `/chat?embed=1` |
 | `src/features/<feature>/` | Screens with their logic; pages stay thin |

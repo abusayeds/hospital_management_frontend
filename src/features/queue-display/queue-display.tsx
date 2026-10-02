@@ -1,14 +1,16 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { KeyRound, Phone, ShieldCheck, Volume2, VolumeX, Wifi, WifiOff } from "lucide-react";
-import { FormEvent, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Phone, ShieldCheck, Volume2, VolumeX, Wifi, WifiOff } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { io, Socket } from "socket.io-client";
 import { BrandMark } from "@/components/shared/brand-logo";
 import { apiFetch, SOCKET_URL } from "@/lib/api";
+import { time12 } from "@/lib/portal";
 import { cn } from "@/lib/utils";
 import { announce, playChime, toBanglaDigits, unlockAudio } from "./announcer";
 
+type DoctorState = "in_session" | "later" | "done" | "on_leave" | "off";
 type DisplayCard = {
   doctorId: string;
   doctorName: string;
@@ -17,13 +19,14 @@ type DisplayCard = {
   departmentBn: string;
   roomNo: string;
   session: { label: string; labelBn: string; startTime: string; endTime: string } | null;
+  state: DoctorState;
+  nextSession: { label: string; labelBn: string; startTime: string; endTime: string } | null;
   nowServing: { serialNo: number; maskedName: string } | null;
   next: { serialNo: number; maskedName: string; priority?: "elderly" | "emergency" }[];
   waitingCount: number;
 };
 type DisplayBoard = { date: string; generatedAt: string; hospital: { name: string; nameBn: string; emergencyPhone: string }; notice: string; doctors: DisplayCard[] };
 
-const KEY_STORAGE = "tl_display_key";
 const SOUND_STORAGE = "tl_display_sound";
 
 // Shown with ?demo=1 so the screen can be presented before real patients exist
@@ -33,9 +36,9 @@ const SAMPLE: DisplayBoard = {
   hospital: { name: "Testolife Hospital", nameBn: "টেস্টোলাইফ হাসপাতাল", emergencyPhone: "999" },
   notice: "অনুগ্রহ করে আপনার সিরিয়াল নম্বরের জন্য অপেক্ষা করুন · Please wait for your serial number to be called",
   doctors: [
-    { doctorId: "1", doctorName: "Dr. Farhana Rahman", doctorNameBn: "ডা. ফারহানা রহমান", department: "Medicine", departmentBn: "মেডিসিন", roomNo: "101", session: { label: "Morning", labelBn: "সকাল", startTime: "09:00", endTime: "13:00" }, nowServing: { serialNo: 12, maskedName: "R*** H***" }, next: [{ serialNo: 13, maskedName: "F*** B***" }, { serialNo: 15, maskedName: "K*** M***", priority: "elderly" }, { serialNo: 14, maskedName: "S*** A***" }], waitingCount: 6 },
-    { doctorId: "2", doctorName: "Prof. Dr. Mahbub Hasan", doctorNameBn: "প্রফেসর ডা. মাহবুব হাসান", department: "Cardiology", departmentBn: "হৃদরোগ", roomNo: "201", session: { label: "Evening", labelBn: "সন্ধ্যা", startTime: "16:00", endTime: "20:00" }, nowServing: { serialNo: 4, maskedName: "A*** R***" }, next: [{ serialNo: 5, maskedName: "N*** J***" }, { serialNo: 6, maskedName: "M*** U***" }], waitingCount: 2 },
-    { doctorId: "3", doctorName: "Dr. Arif Hossain", doctorNameBn: "ডা. আরিফ হোসেন", department: "Pediatrics", departmentBn: "শিশু", roomNo: "103", session: { label: "Morning", labelBn: "সকাল", startTime: "09:30", endTime: "12:30" }, nowServing: null, next: [{ serialNo: 1, maskedName: "T*** I***" }, { serialNo: 2, maskedName: "S*** K***" }], waitingCount: 2 },
+    { doctorId: "1", doctorName: "Dr. Farhana Rahman", doctorNameBn: "ডা. ফারহানা রহমান", department: "Medicine", departmentBn: "মেডিসিন", roomNo: "101", session: { label: "Morning", labelBn: "সকাল", startTime: "09:00", endTime: "13:00" }, state: "in_session", nextSession: null, nowServing: { serialNo: 12, maskedName: "R*** H***" }, next: [{ serialNo: 13, maskedName: "F*** B***" }, { serialNo: 15, maskedName: "K*** M***", priority: "elderly" }, { serialNo: 14, maskedName: "S*** A***" }], waitingCount: 6 },
+    { doctorId: "2", doctorName: "Prof. Dr. Mahbub Hasan", doctorNameBn: "প্রফেসর ডা. মাহবুব হাসান", department: "Cardiology", departmentBn: "হৃদরোগ", roomNo: "201", session: { label: "Evening", labelBn: "সন্ধ্যা", startTime: "16:00", endTime: "20:00" }, state: "in_session", nextSession: null, nowServing: { serialNo: 4, maskedName: "A*** R***" }, next: [{ serialNo: 5, maskedName: "N*** J***" }, { serialNo: 6, maskedName: "M*** U***" }], waitingCount: 2 },
+    { doctorId: "3", doctorName: "Dr. Arif Hossain", doctorNameBn: "ডা. আরিফ হোসেন", department: "Pediatrics", departmentBn: "শিশু", roomNo: "103", session: { label: "Morning", labelBn: "সকাল", startTime: "09:30", endTime: "12:30" }, state: "in_session", nextSession: null, nowServing: null, next: [{ serialNo: 1, maskedName: "T*** I***" }, { serialNo: 2, maskedName: "S*** K***" }], waitingCount: 2 },
   ],
 };
 
@@ -53,13 +56,6 @@ function useClock() {
   );
 }
 
-const readStored = (k: string) => {
-  try {
-    return localStorage.getItem(k);
-  } catch {
-    return null;
-  }
-};
 const store = (k: string, v: string | null) => {
   try {
     if (v === null) localStorage.removeItem(k);
@@ -67,48 +63,29 @@ const store = (k: string, v: string | null) => {
   } catch {}
 };
 
-/** Waiting-room TV. Opens with ?key=… once; the key is remembered on that TV. */
+/** Public queue board: the waiting-room TV and anyone's phone. No login, no key (names are masked). */
 export function QueueDisplay() {
   const demo = useSearchParam("demo") !== null;
-  const urlKey = useSearchParam("key");
-  // undefined while rendering on the server; string | null in the browser
-  const storedKey = useSyncExternalStore(noop, () => readStored(KEY_STORAGE), () => undefined);
-  const [override, setOverride] = useState<string | null | undefined>(undefined);
-  const key = override !== undefined ? override : (urlKey ?? storedKey ?? null);
-  const setKey = (k: string | null) => {
-    store(KEY_STORAGE, k);
-    setOverride(k);
-  };
-
-  // Remember a key that arrived in the URL, so the TV reopens without it after a restart
-  useEffect(() => {
-    if (urlKey) store(KEY_STORAGE, urlKey);
-  }, [urlKey]);
-
-  if (storedKey === undefined) return <main className="min-h-dvh bg-[#0b3b37]" />;
   if (demo) return <Board board={SAMPLE} connected demo />;
-  if (!key) return <KeyPrompt onKey={(k) => setKey(k)} />;
-  return <LiveBoard displayKey={key} onBadKey={() => setKey(null)} />;
+  return <LiveBoard />;
 }
 
-function LiveBoard({ displayKey, onBadKey }: { displayKey: string; onBadKey: () => void }) {
+function LiveBoard() {
   const [connected, setConnected] = useState(false);
   const board = useQuery({
-    queryKey: ["display-board", displayKey],
-    queryFn: () => apiFetch<DisplayBoard>(`/display/queue?key=${encodeURIComponent(displayKey)}`),
+    queryKey: ["display-board"],
+    queryFn: () => apiFetch<DisplayBoard>("/display/queue"),
     refetchInterval: 20_000, // safety net if the socket is down
-    retry: (n, err) => (err as { status?: number }).status !== 401 && n < 3,
     meta: { silent: true }, // nobody reads toasts on a TV
   });
-  const unauthorised = (board.error as { status?: number } | null)?.status === 401;
   const refetch = board.refetch;
 
   // Recall events: the doctor wants the current serial announced again
   const recallRef = useRef<(r: { doctorId: string; serialNo: number; roomNo?: string }) => void>(() => {});
 
   useEffect(() => {
-    // Own socket with the display key (not the staff cookie): joins only the "display" room
-    const socket: Socket = io(SOCKET_URL, { transports: ["websocket", "polling"], auth: { displayKey }, reconnectionDelayMax: 5000 });
+    // Own socket that joins only the "display" room (data-free "something changed" signals)
+    const socket: Socket = io(SOCKET_URL, { transports: ["websocket", "polling"], auth: { display: true }, reconnectionDelayMax: 5000 });
     socket.on("connect", () => {
       setConnected(true);
       void refetch(); // catch up on anything missed while offline
@@ -119,18 +96,8 @@ function LiveBoard({ displayKey, onBadKey }: { displayKey: string; onBadKey: () 
     return () => {
       socket.disconnect();
     };
-  }, [displayKey, refetch]);
+  }, [refetch]);
 
-  if (unauthorised) {
-    return (
-      <Centered>
-        <p className="text-3xl font-semibold">This display key is not valid.</p>
-        <button className="mt-6 rounded-xl bg-white/15 px-6 py-3 text-xl hover:bg-white/25" onClick={onBadKey}>
-          Enter a new key
-        </button>
-      </Centered>
-    );
-  }
   return <Board board={board.data} connected={connected && !board.isError} recallRef={recallRef} />;
 }
 
@@ -234,13 +201,16 @@ function Board({
       <section className={cn("grid flex-1 content-start gap-[1.6vw] px-[3vw] py-[2.5vh]", cols)}>
         {board && doctors.length === 0 && (
           <p className="col-span-full mt-[14vh] text-center text-[clamp(1.6rem,2.6vw,3rem)] text-teal-100">
-            <span className="font-bangla">এই মুহূর্তে কোনো ডাক্তার বসছেন না</span>
+            <span className="font-bangla">কোনো ডাক্তারের তথ্য পাওয়া যায়নি</span>
             <br />
-            No doctors in session right now
+            No doctors to show
           </p>
         )}
         {doctors.map((d) => (
-          <article key={d.doctorId} className="flex flex-col rounded-3xl bg-white/[0.06] p-[clamp(1rem,1.6vw,2rem)] ring-1 ring-white/10">
+          <article
+            key={d.doctorId}
+            className={cn("flex flex-col rounded-3xl bg-white/[0.06] p-[clamp(1rem,1.6vw,2rem)] ring-1 ring-white/10", d.state !== "in_session" && "opacity-70")}
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="truncate text-[clamp(1.3rem,2vw,2.4rem)] leading-tight font-bold text-white">{d.doctorName}</h2>
@@ -255,41 +225,47 @@ function Board({
               </div>
             </div>
 
-            <div key={highlight[d.doctorId] ?? 0} className={cn("mt-[2vh] rounded-2xl bg-white/[0.06] px-[1.2vw] py-[1.2vh]", highlight[d.doctorId] && "tv-called")}>
-              <p className="text-[clamp(0.85rem,1vw,1.2rem)] font-semibold tracking-[0.2em] text-yellow-200 uppercase">
-                Now · <span className="font-bangla tracking-normal">এখন</span>
-              </p>
-              <div className="flex items-end gap-4">
-                <p className={cn("text-[clamp(5rem,10vw,12rem)] leading-[0.95] font-black tabular-nums", d.nowServing ? "text-yellow-300" : "text-white/25")}>
-                  {d.nowServing ? d.nowServing.serialNo : "–"}
+            {d.state !== "in_session" ? (
+              <DoctorStatus card={d} />
+            ) : (
+              <>
+              <div key={highlight[d.doctorId] ?? 0} className={cn("mt-[2vh] rounded-2xl bg-white/[0.06] px-[1.2vw] py-[1.2vh]", highlight[d.doctorId] && "tv-called")}>
+                <p className="text-[clamp(0.85rem,1vw,1.2rem)] font-semibold tracking-[0.2em] text-yellow-200 uppercase">
+                  Now · <span className="font-bangla tracking-normal">এখন</span>
                 </p>
-                {d.nowServing && (
-                  <div className="pb-[1.5vh]">
-                    <p className="font-bangla text-[clamp(1.6rem,2.6vw,3rem)] font-bold text-yellow-200/90">{toBanglaDigits(d.nowServing.serialNo)}</p>
-                    <p className="text-[clamp(1rem,1.3vw,1.5rem)] text-white/70">{d.nowServing.maskedName}</p>
-                  </div>
-                )}
+                <div className="flex items-end gap-4">
+                  <p className={cn("text-[clamp(5rem,10vw,12rem)] leading-[0.95] font-black tabular-nums", d.nowServing ? "text-yellow-300" : "text-white/25")}>
+                    {d.nowServing ? d.nowServing.serialNo : "–"}
+                  </p>
+                  {d.nowServing && (
+                    <div className="pb-[1.5vh]">
+                      <p className="font-bangla text-[clamp(1.6rem,2.6vw,3rem)] font-bold text-yellow-200/90">{toBanglaDigits(d.nowServing.serialNo)}</p>
+                      <p className="text-[clamp(1rem,1.3vw,1.5rem)] text-white/70">{d.nowServing.maskedName}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="mt-[1.8vh]">
-              <p className="text-[clamp(0.85rem,1vw,1.2rem)] font-semibold tracking-[0.2em] text-teal-200 uppercase">
-                Next · <span className="font-bangla tracking-normal">পরবর্তী</span>
-              </p>
-              <ol className="mt-2 grid grid-cols-3 gap-2">
-                {d.next.length ? (
-                  d.next.map((n) => (
-                    <li key={n.serialNo} className="rounded-xl bg-white/12 px-2 py-2 text-center">
-                      <span className="block text-[clamp(1.8rem,3vw,3.6rem)] leading-none font-extrabold tabular-nums">{n.serialNo}</span>
-                      <span className="mt-1 block truncate text-[clamp(0.75rem,0.95vw,1.05rem)] text-white/65">{n.priority === "elderly" ? "Elderly · বয়স্ক" : n.priority === "emergency" ? "Urgent · জরুরি" : n.maskedName}</span>
-                    </li>
-                  ))
-                ) : (
-                  <li className="col-span-3 py-2 text-[clamp(1.1rem,1.6vw,1.8rem)] text-white/40">–</li>
-                )}
-              </ol>
-              {d.waitingCount > 3 && <p className="mt-2 text-[clamp(0.85rem,1vw,1.15rem)] text-teal-100/70">+{d.waitingCount - 3} more waiting</p>}
-            </div>
+              <div className="mt-[1.8vh]">
+                <p className="text-[clamp(0.85rem,1vw,1.2rem)] font-semibold tracking-[0.2em] text-teal-200 uppercase">
+                  Next · <span className="font-bangla tracking-normal">পরবর্তী</span>
+                </p>
+                <ol className="mt-2 grid grid-cols-3 gap-2">
+                  {d.next.length ? (
+                    d.next.map((n) => (
+                      <li key={n.serialNo} className="rounded-xl bg-white/12 px-2 py-2 text-center">
+                        <span className="block text-[clamp(1.8rem,3vw,3.6rem)] leading-none font-extrabold tabular-nums">{n.serialNo}</span>
+                        <span className="mt-1 block truncate text-[clamp(0.75rem,0.95vw,1.05rem)] text-white/65">{n.priority === "elderly" ? "Elderly · বয়স্ক" : n.priority === "emergency" ? "Urgent · জরুরি" : n.maskedName}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="col-span-3 py-2 text-[clamp(1.1rem,1.6vw,1.8rem)] text-white/40">–</li>
+                  )}
+                </ol>
+                {d.waitingCount > 3 && <p className="mt-2 text-[clamp(0.85rem,1vw,1.15rem)] text-teal-100/70">+{d.waitingCount - 3} more waiting</p>}
+              </div>
+              </>
+            )}
           </article>
         ))}
       </section>
@@ -321,34 +297,21 @@ function Board({
   );
 }
 
-function KeyPrompt({ onKey }: { onKey: (k: string) => void }) {
-  const [value, setValue] = useState("");
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    if (value.trim()) onKey(value.trim());
-  };
+/** A doctor who is not seeing patients right now: when they sit today, or why not */
+function DoctorStatus({ card }: { card: DisplayCard }) {
+  const n = card.nextSession;
+  const [bn, en] =
+    card.state === "later" && n
+      ? [`আজ ${n.labelBn} ${toBanglaDigits(time12(n.startTime).replace(/ [AP]M$/, ""))} থেকে বসবেন`, `Today from ${time12(n.startTime)}`]
+      : card.state === "done"
+        ? ["আজকের চেম্বার শেষ", "Finished for today"]
+        : card.state === "on_leave"
+          ? ["আজ ছুটিতে আছেন", "On leave today"]
+          : ["আজ বসবেন না", "Not in today"];
   return (
-    <Centered>
-      <KeyRound className="size-14 text-teal-200" aria-hidden />
-      <h1 className="mt-4 text-3xl font-bold">Waiting-room display</h1>
-      <p className="mt-2 max-w-lg text-lg text-teal-100/80">Enter the display key from the administrator (or open this page with ?key=…). It is remembered on this screen.</p>
-      <form onSubmit={submit} className="mt-6 flex w-full max-w-md gap-2">
-        <label htmlFor="display-key" className="sr-only">
-          Display key
-        </label>
-        <input
-          id="display-key"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          className="h-14 flex-1 rounded-xl bg-white px-4 text-lg text-slate-900 outline-none focus-visible:ring-4 focus-visible:ring-teal-300"
-          autoFocus
-        />
-        <button className="h-14 rounded-xl bg-teal-400 px-6 text-lg font-bold text-teal-950 hover:bg-teal-300">Open</button>
-      </form>
-    </Centered>
+    <div className="mt-[2vh] rounded-2xl bg-white/[0.04] px-[1.2vw] py-[1.6vh]">
+      <p className="font-bangla text-[clamp(1.2rem,1.8vw,2.1rem)] font-semibold text-teal-50">{bn}</p>
+      <p className="text-[clamp(0.95rem,1.2vw,1.4rem)] text-teal-100/70">{en}</p>
+    </div>
   );
-}
-
-function Centered({ children }: { children: React.ReactNode }) {
-  return <main className="flex min-h-dvh flex-col items-center justify-center bg-[#0b3b37] px-6 text-center text-white">{children}</main>;
 }
