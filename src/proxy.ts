@@ -13,7 +13,7 @@ const SESSION_COOKIE = "tl_session";
 export function proxy(request: NextRequest) {
   if (request.cookies.has(SESSION_COOKIE)) return NextResponse.next();
 
-  const login = new URL("/login", request.url);
+  const login = new URL(request.nextUrl.pathname.startsWith("/patient") ? "/login/patient" : "/login", request.url);
   login.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
   return NextResponse.redirect(login);
 }

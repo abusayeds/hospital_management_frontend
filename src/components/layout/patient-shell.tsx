@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { KeyRound, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { ReactNode } from "react";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { Forbidden } from "@/components/shared/forbidden";
@@ -71,13 +71,10 @@ export function PatientShell({ children }: { children: ReactNode }) {
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>
                     <span className="block text-sm font-semibold text-heading">{user.name}</span>
-                    <span className="block truncate text-xs font-normal text-muted-foreground">{user.email}</span>
+                    <span className="block truncate text-xs font-normal text-muted-foreground">Signed in with your phone</span>
                   </DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem render={<Link href="/change-password" />} className="h-10">
-                  <KeyRound className="size-4" /> Change password
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => logout()} className="h-10">
                   <LogOut className="size-4" /> Log out
                 </DropdownMenuItem>

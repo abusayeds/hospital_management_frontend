@@ -112,6 +112,7 @@ export const SOURCE_LABEL: Record<string, string> = {
   reception: "Reception",
   phone: "Phone",
   walk_in: "Walk-in",
+  portal: "Patient portal",
   chatbot: "Web assistant",
   whatsapp: "WhatsApp",
 };

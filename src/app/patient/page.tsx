@@ -1,5 +1,5 @@
-import { PatientHome } from "@/components/dashboards/patient-home";
+import { PortalHome } from "@/features/portal/portal-home";
 
 export default function Page() {
-  return <PatientHome />;
+  return <PortalHome />;
 }

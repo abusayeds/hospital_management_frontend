@@ -66,7 +66,7 @@ type RequestOptions = {
 };
 
 // Never try to refresh for these (they ARE the auth flow)
-const NO_REFRESH = ["/auth/login", "/auth/refresh", "/auth/logout"];
+const NO_REFRESH = ["/auth/login", "/auth/refresh", "/auth/logout", "/portal/auth/"];
 // Access cookie missing/expired → worth one refresh. Revoked/disabled → session is over.
 const REFRESHABLE: ApiErrorCode[] = ["SESSION_EXPIRED", "UNAUTHORIZED"];
 
@@ -181,8 +181,9 @@ export function onSessionLost(reason: SessionEndReason) {
   redirecting = true;
   const next = window.location.pathname + window.location.search;
   // Full reload on purpose: clears every bit of in-memory patient data from the old session
+  const loginPage = window.location.pathname.startsWith("/patient") ? "/login/patient" : "/login";
   // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-  window.location.assign(`/login?reason=${reason}&next=${encodeURIComponent(next)}`);
+  window.location.assign(`${loginPage}?reason=${reason}&next=${encodeURIComponent(next)}`);
 }
 
 // ---- Health ----

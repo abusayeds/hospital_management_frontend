@@ -9,7 +9,7 @@ export type DashboardStats = {
   appointments: {
     total: number;
     byStatus: Partial<Record<AppointmentStatus, number>>;
-    bySource: Partial<Record<"reception" | "chatbot" | "whatsapp" | "phone" | "walk_in", number>>;
+    bySource: Partial<Record<"reception" | "chatbot" | "whatsapp" | "phone" | "walk_in" | "portal", number>>;
     noShowRate: number;
   };
   byDepartment: { department: string; count: number }[];

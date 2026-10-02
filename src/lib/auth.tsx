@@ -50,10 +50,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await apiFetch(everywhere ? "/auth/logout-all" : "/auth/logout", { method: "POST" }).catch(() => {});
       queryClient.clear(); // no cached patient data survives the session
       // Full reload on purpose: clears every bit of in-memory patient data from the old session
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-      window.location.assign(`/login?reason=${reason}`);
+      window.location.assign(user?.role === "patient" ? "/login/patient" : `/login?reason=${reason}`);
     },
-    [queryClient],
+    [queryClient, user?.role],
   );
 
   const value = useMemo<AuthContextValue>(

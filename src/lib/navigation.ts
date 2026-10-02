@@ -282,9 +282,9 @@ export const NAVIGATION: Record<Role, NavSection[]> = {
     {
       items: [
         { label: "Home", labelBn: "হোম", href: "/patient", icon: LayoutDashboard, permission: "portal:own_records" },
-        { label: "Appointments", labelBn: "অ্যাপয়েন্টমেন্ট", href: "/patient/appointments", icon: CalendarDays, permission: "portal:own_records", phase: 5, description: "Book, view and cancel your appointments." },
-        { label: "Prescriptions", labelBn: "প্রেসক্রিপশন", href: "/patient/prescriptions", icon: FileText, permission: "portal:own_records", phase: 5, description: "All your prescriptions in one place." },
-        { label: "Reports", labelBn: "রিপোর্ট", href: "/patient/reports", icon: FlaskConical, permission: "portal:own_records", phase: 5, description: "Download your lab reports." },
+        { label: "Appointments", labelBn: "অ্যাপয়েন্টমেন্ট", href: "/patient/appointments", icon: CalendarDays, permission: "portal:own_records", description: "Book, view and cancel your appointments." },
+        { label: "Prescriptions", labelBn: "প্রেসক্রিপশন", href: "/patient/prescriptions", icon: FileText, permission: "portal:own_records", description: "All your prescriptions in one place." },
+        { label: "Reports", labelBn: "রিপোর্ট", href: "/patient/reports", icon: FlaskConical, permission: "portal:own_records", description: "Download your lab reports." },
         { label: "Testo Life Assistant", labelBn: "Testo Life সহকারী", href: "/chat", icon: Bot },
       ],
     },

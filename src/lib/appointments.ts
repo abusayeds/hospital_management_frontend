@@ -2,7 +2,7 @@
 
 export type AppointmentStatus = "booked" | "checked_in" | "in_consultation" | "completed" | "cancelled" | "no_show";
 export type Priority = "normal" | "elderly" | "emergency";
-export type AppointmentSource = "reception" | "chatbot" | "whatsapp" | "phone" | "walk_in";
+export type AppointmentSource = "reception" | "chatbot" | "whatsapp" | "phone" | "walk_in" | "portal";
 
 export type AppointmentView = {
   id: string;
@@ -40,6 +40,7 @@ export const SOURCE_LABEL: Record<AppointmentSource, string> = {
   whatsapp: "WhatsApp",
   phone: "Phone call",
   walk_in: "Walk-in",
+  portal: "Patient portal",
 };
 
 export const PRIORITY_LABEL: Record<Priority, { label: string; labelBn: string }> = {

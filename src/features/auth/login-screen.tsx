@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Clock, Eye, EyeOff, HeartHandshake, Info, Loader2, LockKeyhole, ShieldCheck, Sparkles, UserX } from "lucide-react";
 import { ReactNode, useEffect, useState, useSyncExternalStore } from "react";
@@ -182,6 +183,12 @@ export function LoginScreen() {
                 Forgot your password? Ask the hospital administrator to reset it.
               </p>
             </form>
+            <Link
+              href="/login/patient"
+              className="mt-5 flex items-center justify-center gap-2 rounded-xl border border-dashed px-4 py-3 text-sm font-medium text-primary hover:bg-accent"
+            >
+              Patient? Sign in with your phone · রোগী? ফোন নম্বর দিয়ে প্রবেশ করুন
+            </Link>
           </div>
 
           {SHOW_DEMO_ACCOUNTS && (
