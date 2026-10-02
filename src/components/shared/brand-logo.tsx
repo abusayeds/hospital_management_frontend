@@ -1,13 +1,14 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-// Simple cross-in-leaf mark drawn in SVG so it stays sharp at every size.
-export function BrandMark({ className }: { className?: string }) {
+export const LOGO_SRC = "/images/testolife-logo.jpg";
+
+// The hospital's logo (same image as the home page), on a white tile so it reads on any background.
+// Size it with className (e.g. "size-11"); the image scales to fit.
+export function BrandMark({ className, alt = "" }: { className?: string; alt?: string }) {
   return (
-    <span className={cn("flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground", className)}>
-      <svg viewBox="0 0 24 24" className="size-5" aria-hidden fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-        <path d="M12 5v14M5 12h14" />
-        <circle cx="12" cy="12" r="9.5" strokeWidth="1.4" opacity="0.55" />
-      </svg>
+    <span className={cn("relative flex size-9 shrink-0 overflow-hidden rounded-xl bg-white ring-1 ring-black/5", className)}>
+      <Image src={LOGO_SRC} alt={alt} fill sizes="80px" className="object-contain p-0.5" />
     </span>
   );
 }
@@ -15,7 +16,7 @@ export function BrandMark({ className }: { className?: string }) {
 export function BrandLogo({ subtitle = "Hospital OS", compact, className }: { subtitle?: string; compact?: boolean; className?: string }) {
   return (
     <span className={cn("flex items-center gap-2.5", className)}>
-      <BrandMark />
+      <BrandMark alt={compact ? "Testolife Hospital" : ""} />
       {!compact && (
         <span className="min-w-0 leading-tight">
           <span className="block truncate text-[15px] font-semibold text-heading">Testolife Hospital</span>

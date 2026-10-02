@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { CallTicker } from "@/features/home/call-ticker";
 
 const entries = [
   {
@@ -27,7 +28,7 @@ const entries = [
 
 export default function Home() {
   return (
-    <main className="flex-1">
+    <main className="flex-1 pb-16">
       <section className="relative overflow-hidden bg-brand-900 text-white">
         {/* Hospital banner as the background; a light overlay keeps the text readable while the banner stays visible */}
         <Image src="/images/hero-banner.jpg" alt="" fill priority sizes="100vw" className="object-cover" />
@@ -86,6 +87,7 @@ export default function Home() {
           ))}
         </ol>
       </section>
+      <CallTicker />
     </main>
   );
 }

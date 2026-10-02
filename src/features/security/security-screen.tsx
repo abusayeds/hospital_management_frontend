@@ -221,7 +221,7 @@ function Content() {
             {Object.entries(d?.limits ?? {}).map(([k, v]) => (
               <div key={k} className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">{LIMIT_LABEL[k] ?? k}</dt>
-                <dd className="font-semibold tabular-nums">{v}</dd>
+                <dd className="font-semibold tabular-nums">{k === "chatPerHour" && v === 0 ? "Unlimited" : v}</dd>
               </div>
             ))}
           </dl>

@@ -271,9 +271,14 @@
 .tv-marquee {
   animation: tv-marquee 40s linear infinite;
 }
+/* Booking phone numbers sliding along the bottom of the home page (same motion as the TV line) */
+.tl-marquee {
+  animation: tv-marquee 28s linear infinite;
+}
 @media (prefers-reduced-motion: reduce) {
   .tv-called,
-  .tv-marquee {
+  .tv-marquee,
+  .tl-marquee {
     animation: none;
   }
 }
