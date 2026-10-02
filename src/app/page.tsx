@@ -71,21 +71,26 @@ export default function Home() {
       </section>
 
       <section className="mx-auto max-w-5xl px-4 pb-16">
-        <h2 className="text-sm font-semibold tracking-wide text-ink-3 uppercase">How it works</h2>
-        <ol className="mt-4 grid gap-3 text-sm text-ink-2 sm:grid-cols-4">
+        <h2 className="font-bangla text-lg font-semibold text-ink">কীভাবে সিরিয়াল নেবেন</h2>
+        <p className="text-sm text-ink-3">How to book an appointment</p>
+        <ol className="mt-4 grid gap-3 text-sm text-ink-2 sm:grid-cols-3">
           {[
-            ["Emergency guardrail", "জরুরি শব্দ ধরা পড়লে সাথে সাথে নিরাপদ উত্তর আর staff alert।"],
-            ["Smart conversation", "রোগীর ভাষা বুঝে কথা বলে, কিন্তু নিজে diagnosis বা ওষুধ দেয় না।"],
-            ["Real data tools", "ডাক্তার, fee, খালি slot সব database থেকে আসে। Assistant কিছু বানিয়ে বলে না।"],
-            ["Live dashboard", "Booking আর alert Socket.IO দিয়ে সাথে সাথে reception-এ পৌঁছায়।"],
-          ].map(([title, text], i) => (
+            ["💬", "চ্যাটে", "উপরের Testo Life Assistant খুলুন। ডাক্তার ও খালি সময় দেখে নিজেই সিরিয়াল নিন, ২৪ ঘণ্টা।"],
+            ["📞", "ফোনে", "নিচের যেকোনো নম্বরে কল করুন। আমাদের প্রতিনিধি সিরিয়াল দিয়ে দেবেন।"],
+            ["🏥", "হাসপাতালে এসে", "রিসেপশনে নাম ও ফোন নম্বর বলুন। সাথে সাথে সিরিয়াল নম্বর পাবেন।"],
+          ].map(([icon, title, text]) => (
             <li key={title} className="rounded-xl border border-line bg-surface p-4">
-              <span className="text-xs font-semibold text-brand-600">STEP {i + 1}</span>
-              <p className="mt-1 font-semibold text-ink">{title}</p>
-              <p className="mt-1 leading-relaxed">{text}</p>
+              <span className="text-2xl" aria-hidden>
+                {icon}
+              </span>
+              <p className="font-bangla mt-2 font-semibold text-ink">{title}</p>
+              <p className="font-bangla mt-1 leading-relaxed">{text}</p>
             </li>
           ))}
         </ol>
+        <p className="font-bangla mt-4 text-sm text-ink-3">
+          সিরিয়ালের দিন সময়মতো আসুন। জরুরি অবস্থায় সিরিয়ালের অপেক্ষা না করে সরাসরি জরুরি বিভাগে আসুন বা লাল নম্বরে কল করুন।
+        </p>
       </section>
       <CallTicker />
     </main>
