@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Phone, Siren } from "lucide-react";
+import { Phone } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 
 type HospitalInfo = { name: string; phones: string[]; emergencyPhone: string; openingHours: string; openingHoursBn?: string };
@@ -16,6 +16,7 @@ const telOf = (p: string) => `tel:${p.replace(/[^\d+]/g, "")}`;
 /**
  * Bottom bar on the home page: the hospital's booking numbers slide past (tap one to call).
  * Numbers come from Admin → Hospital Settings, so changing them there updates the site.
+ * Only the booking numbers are shown (the emergency number is not a booking line).
  * The movement pauses on hover/focus and stops for people who prefer reduced motion.
  */
 export function CallTicker() {
@@ -26,14 +27,9 @@ export function CallTicker() {
     meta: { silent: true },
   });
   const phones = info.data?.phones.filter(Boolean) ?? [];
-  if (!info.data || (!phones.length && !info.data.emergencyPhone)) return null;
+  if (!info.data || !phones.length) return null;
 
-  const items = [
-    ...phones.map((p) => ({ key: `p-${p}`, label: pretty(p), href: telOf(p), emergency: false })),
-    ...(info.data.emergencyPhone
-      ? [{ key: "emergency", label: `জরুরি · Emergency ${pretty(info.data.emergencyPhone)}`, href: telOf(info.data.emergencyPhone), emergency: true }]
-      : []),
-  ];
+  const items = phones.map((p) => ({ key: `p-${p}`, label: pretty(p), href: telOf(p) }));
   // Repeat enough to fill wide screens, then twice for a seamless loop
   const lane = Array.from({ length: Math.max(2, Math.ceil(8 / items.length)) }, () => items).flat();
 
@@ -55,13 +51,9 @@ export function CallTicker() {
                 <a
                   href={i.href}
                   tabIndex={n >= lane.length ? -1 : 0}
-                  className={
-                    i.emergency
-                      ? "flex items-center gap-1.5 rounded-full bg-red-600 px-3.5 py-1.5 text-sm font-semibold whitespace-nowrap tabular-nums hover:bg-red-500"
-                      : "flex items-center gap-1.5 rounded-full border border-white/25 px-3.5 py-1.5 text-sm font-semibold whitespace-nowrap tabular-nums hover:bg-white/10"
-                  }
+                  className="flex items-center gap-1.5 rounded-full border border-white/25 px-3.5 py-1.5 text-sm font-semibold whitespace-nowrap tabular-nums hover:bg-white/10"
                 >
-                  {i.emergency ? <Siren className="size-4" aria-hidden /> : <Phone className="size-3.5" aria-hidden />}
+                  <Phone className="size-3.5" aria-hidden />
                   {i.label}
                 </a>
               </li>
