@@ -6,21 +6,18 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { DEMO_ACCOUNTS } from "./demo-accounts";
 
-export const SHOW_DEMO_ACCOUNTS = process.env.NODE_ENV === "development";
 // Dev only — set NEXT_PUBLIC_DEMO_PASSWORD in frontend/.env.development.local (same value as backend DEMO_PASSWORD).
-// Guarded by SHOW_DEMO_ACCOUNTS so it is stripped from production builds.
-export const DEMO_PASSWORD = SHOW_DEMO_ACCOUNTS ? (process.env.NEXT_PUBLIC_DEMO_PASSWORD ?? "") : "";
+// Password autofill remains limited to development builds.
+export const DEMO_PASSWORD = process.env.NODE_ENV === "development" ? (process.env.NEXT_PUBLIC_DEMO_PASSWORD ?? "") : "";
 
 export type DemoAccount = (typeof DEMO_ACCOUNTS)[number];
 type Props = ComponentProps<typeof Input> & { onPick: (account: DemoAccount) => void };
 
-/** Email input that opens a demo-account list on click (development only). */
+/** Email input that opens the test-account list on click in every environment. */
 export function EmailWithDemoAccounts({ onPick, ...props }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(-1);
-
-  if (!SHOW_DEMO_ACCOUNTS) return <Input {...props} />;
 
   const q = query.trim().toLowerCase();
   const matches = DEMO_ACCOUNTS.filter((a) => !q || a.email.toLowerCase().includes(q) || String(a.role).toLowerCase().includes(q));
@@ -75,7 +72,7 @@ export function EmailWithDemoAccounts({ onPick, ...props }: Props) {
       {show && (
         <div className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-xl border bg-popover text-popover-foreground shadow-raised">
           <p className="border-b px-3 py-2 text-[11px] text-muted-foreground">
-            Demo accounts · development only
+            Demo accounts
             {!DEMO_PASSWORD && (
               <>
                 {" "}
