@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 // Where the Express API runs. Only the Next.js server uses this (not the browser).
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:5000";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:7000";
 
 const nextConfig: NextConfig = {
   // The browser calls /api/v1/* on THIS origin and Next.js forwards it to the API.
