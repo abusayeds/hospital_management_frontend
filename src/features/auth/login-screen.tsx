@@ -52,7 +52,7 @@ export function LoginScreen() {
   const reason = useSearchParam("reason");
   const next = useSearchParam("next");
   const [showPassword, setShowPassword] = useState(false);
-  const { register, handleSubmit, setValue, setFocus, formState } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) });
+  const { register, handleSubmit, setValue, setFocus, formState } = useForm<LoginValues>({ resolver: zodResolver(loginSchema), defaultValues: { password: "TestoLife2026" } });
 
   // Already signed in? Go straight to the dashboard
   useEffect(() => {
@@ -132,8 +132,8 @@ export function LoginScreen() {
                   {...register("email")}
                   onPick={(a) => {
                     setValue("email", a.email, { shouldValidate: true });
-                    // Dev password from .env (or empty, clearing anything the browser autofilled)
-                    setValue("password", DEMO_PASSWORD, { shouldValidate: Boolean(DEMO_PASSWORD) });
+                    // Use the configured demo password when available; otherwise keep the editable password.
+                    if (DEMO_PASSWORD) setValue("password", DEMO_PASSWORD, { shouldValidate: true });
                     setFocus(DEMO_PASSWORD ? "email" : "password");
                   }}
                 />
@@ -151,7 +151,6 @@ export function LoginScreen() {
                 <div className="relative">
                   <Input
                     id="password"
-                    value =  {"TestoLife2026"}
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     className="h-11 pr-11"
